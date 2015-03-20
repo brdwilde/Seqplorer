@@ -8,22 +8,20 @@ function authenticate() {
 	if(!(isset($_SESSION['email']))){
 		// specify config paths
 		$currentpath = getcwd()."/";
-		$configpath = array( 0=>$currentpath, 1=>"/etc/seqporer/", 2=>"/etc/apache2/seqporer/");
+		$configpath = array( 0=>$currentpath, 1=>"/etc/nxtvat/", 2=>"/etc/apache2/nxtvat/");
 		// search the configuration paths for a config file
 		// the first file found wil become the config file
 		$searchpath='';
 		foreach ($configpath as $path) {
 			if (!isset($_SESSION['config'])){
 				$searchpath = $searchpath." ".$path;
-				print "Trying ".$path."\n";
 				if (file_exists($path."config.xml")){
-#					if (is_writable($path."config.xml")){
+					if (is_writable($path."config.xml")){
 						// security risk! warn the user
-#						die ("Found config file ".$path."config.xml, but it is writable!!! Please fix this security flaw!!!");
-#					} else {
-
+						die ("Found config file ".$path."config.xml, but it is writable!!! Please fix this security flaw!!!");
+					} else {
 						$_SESSION['config'] = $path."config.xml";
-#					}
+					}
 				}
 			}
 		}
@@ -64,40 +62,32 @@ function array_to_string($array){
 
 // function to connect to a MongoDB-database given certain credentials
 function connect_mongo(){
-#	$m = new Mongo();
-	$hoststring = 'localhost';
-	if ($_SESSION['credentials']['database']['host']) {
-		$hoststring = "mongodb://";
-	}
-	if ($_SESSION['credentials']['database']['username']) { 
-		$hoststring = $hoststring.$_SESSION['credentials']['database']['username'].":".$_SESSION['credentials']['database']['password']."@";
-	}
-	if ($_SESSION['credentials']['database']['host']) { $hoststring = $hoststring.$_SESSION['credentials']['database']['host'];}
-	if ($_SESSION['credentials']['database']['port']) { $hoststring = $hoststring.":".$_SESSION['credentials']['database']['port'];}
-	$m = new Mongo($hoststring);
-	$db = $m->selectDB($_SESSION['credentials']['database']['dbname']);
+	$m = new Mongo();
 #	$db = $m->nxtseq;
-	#$db = $m->$_SESSION['credentials']['database'];
+	$db = $m->$_SESSION['credentials']['database'];
 	return $db;
 }
 
 // function to set the mongo collections to use
 function get_collections($db){
-	$collections['adv_filter'] = $db->$_SESSION['credentials']['database']['collections']['adv_filter'];
-	$collections['configurations'] = $db->$_SESSION['credentials']['database']['collections']['configurations'];
-	$collections['counts'] = $db->$_SESSION['credentials']['database']['collections']['counts'];
-	$collections['genome'] = $db->$_SESSION['credentials']['database']['collections']['genome'];
-	$collections['groups'] = $db->$_SESSION['credentials']['database']['collections']['groups'];
-	$collections['log'] = $db->$_SESSION['credentials']['database']['collections']['log'];
-	$collections['plots'] = $db->$_SESSION['credentials']['database']['collections']['plots'];
-	$collections['projects'] = $db->$_SESSION['credentials']['database']['collections']['projects'];
-	$collections['samples'] = $db->$_SESSION['credentials']['database']['collections']['samples'];
-	$collections['servers'] = $db->$_SESSION['credentials']['database']['collections']['servers'];
-	$collections['users'] = $db->$_SESSION['credentials']['database']['collections']['users'];
-	$collections['variants'] = $db->$_SESSION['credentials']['database']['collections']['variants'];
-	$collections['variants_unique'] = $db->$_SESSION['credentials']['database']['collections']['variants_unique'];
-	$collections['vcfheader'] = $db->$_SESSION['credentials']['database']['collections']['vcfheader'];
-	$collections['views'] = $db->$_SESSION['credentials']['database']['collections']['views'];
+	// $collections['news'] = $db->$_SESSION['credentials']['collections']['news'];
+	// $collections['faq'] = $db->$_SESSION['credentials']['collections']['faq'];
+	$collections['adv_filter'] = $db->$_SESSION['credentials']['collections']['adv_filter'];
+	// $collections['bugs'] = $db->$_SESSION['credentials']['collections']['bugs'];
+	$collections['configurations'] = $db->$_SESSION['credentials']['collections']['configurations'];
+	$collections['counts'] = $db->$_SESSION['credentials']['collections']['counts'];
+	$collections['genome'] = $db->$_SESSION['credentials']['collections']['genome'];
+	$collections['groups'] = $db->$_SESSION['credentials']['collections']['groups'];
+	$collections['log'] = $db->$_SESSION['credentials']['collections']['log'];
+	$collections['plots'] = $db->$_SESSION['credentials']['collections']['plots'];
+	$collections['projects'] = $db->$_SESSION['credentials']['collections']['projects'];
+	$collections['samples'] = $db->$_SESSION['credentials']['collections']['samples'];
+	$collections['servers'] = $db->$_SESSION['credentials']['collections']['servers'];
+	$collections['users'] = $db->$_SESSION['credentials']['collections']['users'];
+	$collections['variants'] = $db->$_SESSION['credentials']['collections']['variants'];
+	$collections['variants_unique'] = $db->$_SESSION['credentials']['collections']['variants_unique'];
+	$collections['vcfheader'] = $db->$_SESSION['credentials']['collections']['vcfheader'];
+	$collections['views'] = $db->$_SESSION['credentials']['collections']['views'];
 
 	return $collections;
 }

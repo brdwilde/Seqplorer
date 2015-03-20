@@ -1,21 +1,10 @@
 <?php
+session_start();
 require_once('jformer.php');
-#include_once 'functions.php';
-$jsonconfig = file_get_contents('/home/brdwilde/workspace/seqplorer-svn/scripts/seqplorer/seqplorer.json');
-$credentials = json_decode($jsonconfig, TRUE);
-
-$hoststring = 'localhost';
-if ($credentials['database']['host']) {
-    $hoststring = "mongodb://";
-}
-if ($credentials['database']['username']) { 
-    $hoststring = $hoststring.$credentials['database']['username'].":".$credentials['database']['password']."@";
-}
-if ($credentials['database']['host']) { $hoststring = $hoststring.$credentials['database']['host'];}
-if ($credentials['database']['port']) { $hoststring = $hoststring.":".$credentials['database']['port'];}
-$m = new Mongo($hoststring);
-$db = $m->selectDB($credentials['database']['dbname']);
-
+include_once 'functions.php';
+$credentials = read_credentials($_SESSION['config']);
+$db = connect_mongo();
+$collections = get_collections($db);
 
 ////////////////////////////////////////////////////
 // build the form depending on the type requested
@@ -73,8 +62,6 @@ $job_scripts = array(
 // get type from post if set, else get from URL
 $type = isset($_POST['type'])   ? $_POST['type']  : $_GET['type'];
 
-print($type);
-
 // create the form element
 $form = new JFormer(
     'form',
@@ -84,7 +71,188 @@ $form = new JFormer(
         'onSubmitFunctionServerSide' => 'on'.$type.'Submit'
     )
 );
-
+if ($type == 'logs'){
+    $all_jobs_query = $collections['log']->find(
+        array(
+            'type'=>'job',
+            'config.email_to'=> 'gbramdewilde@gmail.com',
+            'masterprocess'=>array('$exists'=>false),
+        )
+    );
+    $completed_dd = array();
+    $running_dd = array();
+    $error_dd = array();
+    array_push($completed_dd,
+        array (
+            'value' => '',
+            'label' => ' - Completed jobs - ',
+            'disabled' => true,
+            'selected' => true
+        )
+    );
+    array_push($running_dd,
+        array (
+            'value' => '',
+            'label' => ' - Running jobs - ',
+            'disabled' => true,
+            'selected' => true
+        )
+    );
+    array_push($error_dd,
+        array (
+            'value' => '',
+            'label' => ' - Jobs with error(s) - ',
+            'disabled' => true,
+            'selected' => true
+        )
+    );
+    foreach ($all_jobs_query as $index => $job){
+        if (isset($job['error'])){
+            array_push($error_dd, array('value'=>$job['_id']."", 'label'=>$job['config']['config_id']));
+        }
+        else {
+            $subjobs = $collections['log']->findOne(
+                array(
+                    'type'=>'job',
+                    'masterprocess'=>$job['_id'],
+                    'error'=>array('$exists'=>true)
+                )
+            );
+            if (isset($subjobs)){
+                array_push($error_dd, array('value'=>$job['_id']."", 'label'=>$job['config']['config_id']));
+            }
+            else {
+                if (isset($job['end'])) {
+                    $subjobs = $collections['log']->findOne(
+                        array(
+                            'type'=>'job',
+                            'masterprocess'=>$job['_id'],
+                            'end'=>array('$exists'=>false)
+                        )
+                    );
+                    if (isset($subjobs)) {
+                        array_push($running_dd, array('value'=>$job['_id']."", 'label'=>$job['config']['config_id']));
+                    } 
+                    else {
+                        array_push($completed_dd, array('value'=>$job['_id']."", 'label'=>$job['config']['config_id']));
+                    }       
+                } 
+                else {
+                    array_push($running_dd, array('value'=>$job['_id']."", 'label'=>$job['config']['config_id']));
+                }
+            }               
+        }
+    }
+    $section = new JFormSection($form->id.'Section', array(
+        'title' => '<h4>Show logs</h4>',
+    ));
+    $sectionComponents = array();
+    if (count($completed_dd) > 1){
+        array_push($sectionComponents, 
+            new JFormComponentDropDown(
+                'complete_job',
+                '',
+                $completed_dd,
+                array(
+                    'width' => 'long'
+                )
+            )
+        ); 
+    }
+    else {
+        array_push($sectionComponents, 
+            new JFormComponentHtml(
+                "<div>No completed jobs.</div>"
+            )
+        );
+    }
+    if (count($running_dd) > 1){
+        array_push($sectionComponents,
+            new JFormComponentDropDown(
+                'running_job',
+                '',
+                $running_dd,
+                array(
+                    'width' => 'long'
+                )
+            )
+        );
+    }
+    else {
+        array_push($sectionComponents, 
+            new JFormComponentHtml(
+                "<div>No running jobs.</div>"
+            )
+        );
+    }
+    if (count($error_dd) > 1){
+        array_push($sectionComponents, 
+            new JFormComponentDropDown(
+                'error_job',
+                '',
+                $error_dd,
+                array(
+                    'width' => 'long'
+                )
+            )
+        );
+    }
+    else {
+        array_push($sectionComponents, 
+            new JFormComponentHtml(
+                "<div>No jobs with errors.</div>"
+            )
+        );
+    }
+    $section->addJFormComponentArray(
+        $sectionComponents
+    );
+}
+elseif ($type == 'login') {
+    $section = new JFormSection($form->id.'Section', array(
+        'title' => '<h4>Login</h4>',
+    ));
+    $section->addJFormComponentArray(
+        array(
+            // No public registrations at the moment
+            // new JFormComponentHtml(
+            //     "<div>Not a member? Please <a class='popup' keep_visible='1' action='register' href=''>register</a></div>"
+            // ),
+            new JFormComponentHtml(
+                "<div><p>We're not allowing registrations at the moment.<br>Active members can login however.</p></div>"
+            ),
+            new JFormComponentSingleLineText(
+                'email',
+                'E-mail address:',
+                array(
+                    'width' => 'long',
+                    'validationOptions' => array(
+                        'required', 
+                        'email'
+                    ),
+                    'tip' => '<p>Provide your login email adress</p>',
+                )
+            ),
+            new JFormComponentSingleLineText(
+                'password',
+                'Password:', 
+                array(
+                    'width' => 'long',
+                    'type' => 'password',
+                    'validationOptions' => array(
+                        'required',
+                        'password'
+                    ),
+                    'enterSubmits' => true,
+                    'tip' => '<p>Enter your password</p>',
+                )
+            ),
+            new JFormComponentHtml(
+                "<div><a class='popup' keep_visible='1' action='forgot' href=''>Forgot your password?</a></div>"
+            ),
+        )
+    );  
+}
 elseif ($type == 'igv') {
     // Get sample ids
     $samples_ids     = isset($_POST['samples_id']) ? json_decode(str_replace("'", "\"",$_POST['samples_id']))  : array();
@@ -98,7 +266,7 @@ elseif ($type == 'igv') {
     );
     foreach ($samples_ids as $key => $sample_id) {
         // Get files per sample
-        $files_array = $credentials[database][collections]['samples']->findOne(array('_id'=>new MongoId($sample_id)));    
+        $files_array = $collections['samples']->findOne(array('_id'=>new MongoId($sample_id)));    
         foreach ($files_array['files'] as $key => $file) {
             if ($file['filetype'] == 'bam' || $file['filetype'] == 'vcf' || $file['filetype'] == 'wig' || $file['filetype'] == 'bed'){
                 if ($file['type'] == 'local') {
@@ -197,7 +365,7 @@ elseif ($type == 'shiny') {
         )
     );
     if (!empty($samples_ids)){
-        $plots_array = $credentials[database][collections]['plots']->find(array('sampleids'=>array('$in'=>$samples_ids)),array('_id'=>1,'name'=>1,'sampleids'=>1));
+        $plots_array = $collections['plots']->find(array('sampleids'=>array('$in'=>$samples_ids)),array('_id'=>1,'name'=>1,'sampleids'=>1));
         $all_plots = array();
         foreach ($plots_array as $plot) {
             $samples_ids = array_merge($samples_ids,$plot['sampleids']);
@@ -206,7 +374,7 @@ elseif ($type == 'shiny') {
         }
         array_unique($samples_ids);
         foreach ($samples_ids as $sample_id) {
-            $sample = $credentials[database][collections]['samples']->findOne(array('_id'=>new MongoId($sample_id)),array('name'=>1));
+            $sample = $collections['samples']->findOne(array('_id'=>new MongoId($sample_id)),array('name'=>1));
             $all_samples[$sample_id] = $sample['name'];
         }
         foreach ($all_plots as $plot) {
@@ -264,7 +432,7 @@ elseif ($type == 'load_filter') {
         foreach ($projects_id as $key=>$value){
             $ids['$in'][$key] = $value;
         }
-        $filters = $credentials[database][collections]['adv_filter']->find(array('projects'=>$ids));
+        $filters = $collections['adv_filter']->find(array('projects'=>$ids));
         // build the list
         foreach($filters as $key =>$filter){
             array_push($dbfilters,
@@ -323,7 +491,7 @@ elseif ($type == 'load_filter') {
 elseif ($type == 'save_filter') {
     $filter_id = isset($_POST['filter_id']) ? $_POST['filter_id']  : '';
     if ($filter_id != ''){
-        $default_filter = $credentials[database][collections]['adv_filter']->findOne(array( "_id" => new MongoId($filter_id)));
+        $default_filter = $collections['adv_filter']->findOne(array( "_id" => new MongoId($filter_id)));
     }
     else {
         $default_filter['name'] = '';
@@ -370,7 +538,7 @@ elseif ($type == 'load_view') {
         foreach ($projects_id as $key=>$value){
             $ids['$in'][$key] = $value;
         }
-        $views = $credentials[database][collections]['views']->find(array( '$or'=>array(array('projects'=>$ids), array('projects'=>array('$exists'=>false))),'collection'=>'variants'));
+        $views = $collections['views']->find(array( '$or'=>array(array('projects'=>$ids), array('projects'=>array('$exists'=>false))),'collection'=>'variants'));
         // build the list
         foreach($views as $key =>$view){
             array_push($dbviews,
@@ -433,10 +601,10 @@ elseif ($type == 'create_view') {
     $visible = '';
     $total = "<ul id='hidden_columns' class='droptrue'>Hidden";
     if ($view_id != ''){
-        $default_view = $credentials[database][collections]['views']->findOne(array( "_id" => new MongoId($view_id)));
+        $default_view = $collections['views']->findOne(array( "_id" => new MongoId($view_id)));
     }
     else {
-        $default_view = $credentials[database][collections]['views']->findOne(array( "_id" => new MongoId('50d1def9721c5a2c32000000')));
+        $default_view = $collections['views']->findOne(array( "_id" => new MongoId('50d1def9721c5a2c32000000')));
     }
     foreach ($default_view as $key => $value) {
         if ($key == 'columns') {
@@ -567,7 +735,7 @@ elseif ($type == 'save_view') {
     $projects_id = isset($_POST['projects_id']) ? $_POST['projects_id'] : '';
     $view_id = isset($_POST['view_id']) ? $_POST['view_id']  : '';
     if ($view_id != ''){
-        $default_view = $credentials[database][collections]['views']->findOne(array( "_id" => new MongoId($view_id)));
+        $default_view = $collections['views']->findOne(array( "_id" => new MongoId($view_id)));
     }
     else {
         $default_view['name'] = '';
@@ -600,9 +768,9 @@ elseif ($type == 'manage_project') {
     $user_id = isset($_POST['user_id']) ? $_POST['user_id']  : '';
     $groups_id = isset($_POST['groups_id']) ? $_POST['groups_id']  : '';
     $projects_id = isset($_POST['projects_id']) ? $_POST['projects_id']  : '';
-    $project = $credentials[database][collections]['projects']->findOne(array('_id'=>new MongoId($projects_id)));
-    $groups_query = $credentials[database][collections]['groups']->find(array('admin'=>new MongoId($user_id)));
-    // $groups_query = $credentials[database][collections]['groups']->find(array('admin'=>new MongoId('50d1e3b8721c5a0142000001')));
+    $project = $collections['projects']->findOne(array('_id'=>new MongoId($projects_id)));
+    $groups_query = $collections['groups']->find(array('admin'=>new MongoId($user_id)));
+    // $groups_query = $collections['groups']->find(array('admin'=>new MongoId('50d1e3b8721c5a0142000001')));
     foreach($groups_query as $key=>$group){
         foreach ($project['groups'] as $pr_gr_key => $pr_group) {
             if ($pr_group['id'].'' == $group['_id'].''){
@@ -708,7 +876,7 @@ elseif ($type == 'add_project') {
 elseif ($type == 'manage_sample') {
     $projects = array();
     $genomelist = array();
-    $genomes = $credentials[database][collections]['genome']->find();
+    $genomes = $collections['genome']->find();
     foreach ($genomes as $doc) {
         array_push(
             $genomelist,
@@ -720,11 +888,11 @@ elseif ($type == 'manage_sample') {
     }
     $user_id = isset($_POST['user_id']) ? $_POST['user_id']  : '';
     $projects_id = isset($_POST['projects_id']) ? $_POST['projects_id']  : '';
-    $sel_project = $credentials[database][collections]['projects']->findOne(array('_id'=>new MongoId($projects_id)));
+    $sel_project = $collections['projects']->findOne(array('_id'=>new MongoId($projects_id)));
     $samples_id = isset($_POST['samples_id']) ? $_POST['samples_id']  : '';
-    $sample = $credentials[database][collections]['samples']->findOne(array('_id'=>new MongoId($samples_id)));
-    $groups_query = $credentials[database][collections]['groups']->find(array('admin'=>new MongoId($user_id)));
-    // $groups_query = $credentials[database][collections]['groups']->find(array('admin'=>new MongoId('50d1e3b8721c5a0142000001')));
+    $sample = $collections['samples']->findOne(array('_id'=>new MongoId($samples_id)));
+    $groups_query = $collections['groups']->find(array('admin'=>new MongoId($user_id)));
+    // $groups_query = $collections['groups']->find(array('admin'=>new MongoId('50d1e3b8721c5a0142000001')));
 
     $db_projects = $sample['project'];
     $db_names = array();
@@ -737,7 +905,7 @@ elseif ($type == 'manage_sample') {
     array_push($projects, array('value'=>str_replace( "\"", "'",json_encode($db_projects)),'label'=>implode(" --- ", $db_names))); 
 
     foreach($groups_query as $key=>$group){
-        $projects_query = $credentials[database][collections]['projects']->find(array('groups.id'=>new MongoId($group['_id'])));
+        $projects_query = $collections['projects']->find(array('groups.id'=>new MongoId($group['_id'])));
         foreach ($projects_query as $proj_key => $project) {
                 if ($sel_project['_id'].'' == $project['_id'].''){
                     $initial = $project['_id'].'';
@@ -792,7 +960,7 @@ elseif ($type == 'add_sample') {
     $genomelist = array();
     $projects_id = isset($_POST['projects_id']) ? $_POST['projects_id']  : '';
 
-    $genomes = $credentials[database][collections]['genome']->find();
+    $genomes = $collections['genome']->find();
     foreach ($genomes as $doc) {
         array_push(
             $genomelist,
@@ -1141,7 +1309,7 @@ elseif ($type == 'compare_variants') {
     $ref_genome = '';
     $genome_err = 0;
     foreach ($samples_ids as $key => $sample) {
-        $samples = $credentials[database][collections]['samples']->findOne(array('_id'=>create_mongo_id($sample)));
+        $samples = $collections['samples']->findOne(array('_id'=>create_mongo_id($sample)));
         if ($ref_genome != '' && $ref_genome != $samples['genome']) {
             $genome_err = 1;
         }
@@ -1271,7 +1439,7 @@ elseif ($type == 'coverage') {
     $ref_genome = '';
     $genome_err = 0;
     foreach ($samples_ids as $key => $sample) {
-        $samples = $credentials[database][collections]['samples']->findOne(array('_id'=>create_mongo_id($sample)));
+        $samples = $collections['samples']->findOne(array('_id'=>create_mongo_id($sample)));
         if ($ref_genome != '' && $ref_genome != $samples['genome']) {
             $genome_err = 1;
         }
@@ -1510,7 +1678,7 @@ elseif ($type == 'export') {
         new JFormComponentHidden('email_to', str_replace( "\"", "'",json_encode(array($_SESSION['email'])))),
         new JFormComponentHidden('config_id',  date("Y-m-d_H-i-s")."_".str_replace(".", "_",substr($_SESSION['email'], 0,strpos($_SESSION['email'], '@')))."_".$job_scripts[$type])
     );
-    $all_columns = $credentials[database][collections]['variants_unique']->find(array(),array('_id'=>1, 'name'=>1));
+    $all_columns = $collections['variants_unique']->find(array(),array('_id'=>1, 'name'=>1));
     $columns = 
         array(
             array(
@@ -1589,7 +1757,7 @@ elseif ($type == 'create_plot') {
         new JFormComponentHidden('config_id',  date("Y-m-d_H-i-s")."_".str_replace(".", "_",substr($_SESSION['email'], 0,strpos($_SESSION['email'], '@')))."_".$job_scripts[$type]),
         new JFormComponentHidden('export','mongodb')
     );
-    $all_columns = $credentials[database][collections]['variants_unique']->find(array(),array('_id'=>1, 'name'=>1));
+    $all_columns = $collections['variants_unique']->find(array(),array('_id'=>1, 'name'=>1));
     $columns = 
         array(
             array(
@@ -1634,10 +1802,10 @@ elseif ($type == 'create_plot') {
 elseif ($type == 'rename') {
     $project_ids = isset($_POST['projects_id']) ? json_decode(str_replace("'", "\"",$_POST['projects_id']))  : array();
     $sampleid = isset($_POST['samples_id']) ? $_POST['samples_id']  : '';
-    $sample = $credentials[database][collections]['samples']->findOne(array('_id'=>new MongoId($sampleid)));
+    $sample = $collections['samples']->findOne(array('_id'=>new MongoId($sampleid)));
     $projects = array();
     $genomelist = array();
-    $genomes = $credentials[database][collections]['genome']->find();
+    $genomes = $collections['genome']->find();
     foreach ($genomes as $doc) {
         array_push(
             $genomelist,
@@ -1649,8 +1817,8 @@ elseif ($type == 'rename') {
     }
 
     $email=$_SESSION['email'];
-    $user = $credentials[database][collections]['users']->findOne(array('email'=>$email,'active'=>1), array('_id'=>true));
-    $groups_query = $credentials[database][collections]['groups']->find(array('admin'=>$user['_id']));
+    $user = $collections['users']->findOne(array('email'=>$email,'active'=>1), array('_id'=>true));
+    $groups_query = $collections['groups']->find(array('admin'=>$user['_id']));
     $db_projects = $sample['project'];
     $db_names = array();
     $db_ids = array();
@@ -1661,7 +1829,7 @@ elseif ($type == 'rename') {
     }
     array_push($projects, array('value'=>str_replace( "\"", "'",json_encode($db_projects)),'label'=>implode(" --- ", $db_names))); 
     foreach($groups_query as $key=>$group){
-        $projects_query = $credentials[database][collections]['projects']->find(array('groups.id'=>new MongoId($group['_id'])));
+        $projects_query = $collections['projects']->find(array('groups.id'=>new MongoId($group['_id'])));
         foreach ($projects_query as $proj_key => $project) {
             if (in_array($project['name'], $db_names)) {
                 $x = array_search($project['name'], $db_names);
@@ -1750,7 +1918,7 @@ elseif ($type == 'map_reads') {
     $ref_genome = '';
     $genome_err = 0;
     foreach ($samples_ids as $key => $sample) {
-        $samples = $credentials[database][collections]['samples']->findOne(array('_id'=>new MongoId($sample)));
+        $samples = $collections['samples']->findOne(array('_id'=>new MongoId($sample)));
         if ($ref_genome != '' && $ref_genome != $samples['genome']) {
             $genome_err = 1;
         }
@@ -1758,6 +1926,7 @@ elseif ($type == 'map_reads') {
         if (isset($samples['files'])){
             foreach($samples['files'] as $file){
                 $file['sampleid'] = $samples['_id']."";
+                $file["samplename"] = $samples['name'];
                 if ($file['filetype'] == 'bam') {
                     array_push($available_files,
                         array(
@@ -1925,7 +2094,7 @@ elseif ($type == 'map_reads') {
                 array('value' => 'boolean_true', 'label' => 'Local realignment', 'checked'=>true)),array('style'=>'clear:none')      
             ),
             // Add hidden configuration parameters
-            new JFormComponentHidden('output','default_output_directory'),
+            new JFormComponentHidden('output','default_output_directory/'),
             new JFormComponentHidden('genomebuild',$ref_genome),
             new JFormComponentHidden('chuncksize',2000000),
             new JFormComponentHidden('projectid',$project_ids[0]),
@@ -1989,7 +2158,7 @@ elseif ($type == 'call_variants') {
     $ref_genome = '';
     $genome_err = 0;
     foreach ($samples_ids as $key => $sample) {
-        $samples = $credentials[database][collections]['samples']->findOne(array('_id'=>new MongoId($sample)));
+        $samples = $collections['samples']->findOne(array('_id'=>new MongoId($sample)));
         if ($ref_genome != '' && $ref_genome != $samples['genome']) {
             $genome_err = 1;
         }
@@ -2259,7 +2428,7 @@ elseif ($type == 'register') {
 }
 elseif ($type == 'user') {
     $dropdown = country_list();
-    $user = $credentials[database][collections]['users']->findOne(array('email'=>$_SESSION['email']));
+    $user = $collections['users']->findOne(array('email'=>$_SESSION['email']));
     $section = new JFormSection($form->id.'Section', array(
         'title' => '<h4>Change your personal information</h4>',
     ));
@@ -2367,7 +2536,7 @@ elseif ($type == 'approve_group') {
 }
 elseif ($type == 'unsubscribe_group') {
     $groups_id = isset($_POST['groups_id']) ? $_POST['groups_id']  : $formValues->formSection->groups_id;
-    $group = $credentials[database][collections]['groups']->findOne(array('_id'=>new MongoId($groups_id)));
+    $group = $collections['groups']->findOne(array('_id'=>new MongoId($groups_id)));
     $user_id = isset($_POST['user_id']) ? $_POST['user_id']  : '';
     $section = new JFormSection($form->id.'Section', array(
         'title' => '<h4>Unsubscribe from group: <i>'.$group['name'].'</i></h4>',
@@ -2382,15 +2551,15 @@ elseif ($type == 'manage_group') {
     $admin_users = array();
     $delete_users = array();
     $groups_id = isset($_POST['groups_id']) ? $_POST['groups_id']  : '';
-    $group = $credentials[database][collections]['groups']->findOne(array('_id'=>new MongoId($groups_id)));
+    $group = $collections['groups']->findOne(array('_id'=>new MongoId($groups_id)));
     if ($group['public'] == 'yes'){
         $checked = true;
     }
     else {
         $checked = false;
     }
-    $admin = $credentials[database][collections]['users']->findOne(array('_id'=>$group['admin']));
-    $user_query = $credentials[database][collections]['users']->find();
+    $admin = $collections['users']->findOne(array('_id'=>$group['admin']));
+    $user_query = $collections['users']->find();
     foreach($user_query as $key=>$users){
         if (in_array($users['_id'],$group['users']) && in_array($users['_id'],$group['approved']) && $users['email'] != 'GUEST@SEQPLORER.ORG'){  
             if (in_array($users['_id'],$group['users']) && $users['email'] == $admin['email']){
@@ -2494,7 +2663,7 @@ $form->processRequest();
 // Set the function for a successful form submission
 function onlogsSubmit($formValues){
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $formValues = $formValues->formSection;
     if ($formValues->complete_job != ''){
         $job_id = $formValues->complete_job;
@@ -2522,11 +2691,11 @@ function onlogsSubmit($formValues){
 }
 function onloginSubmit($formValues){
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
 
     $formValues = $formValues->formSection;
 
-    $userinfo = $credentials[database][collections]['users']->findOne(array('email'=>strtoupper($formValues->email)));
+    $userinfo = $collections['users']->findOne(array('email'=>strtoupper($formValues->email)));
     if (!$userinfo) {
         // wrong user, focus on user input field
         $response = array(
@@ -2576,13 +2745,13 @@ function onigvSubmit($formValues){
     // appRequest(port, dataUrl, genomeID, mergeFlag, locusString, trackName)
     // $response = array('failureNoticeHtml' => $link);
     $response = array(
-        'successJs' => 'appRequest(60151, "'.$link.'", "", "true");setTimeout(function(){$("#showhide").fadeOut("slow");$("#showhide").html();},2000);'
+        'successJs' => 'console.log("'.$link.'");appRequest(60151, "'.$link.'", "", "true");setTimeout(function(){$("#showhide").fadeOut("slow");$("#showhide").html();},2000);'
     );
     return $response;
 }
 function onshinySubmit($formValues){
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $credentials = read_credentials($_SESSION['config']);
     // Collect values
     $formValues = $formValues->formSection;
@@ -2590,7 +2759,7 @@ function onshinySubmit($formValues){
     $link = 'https://brenner.ugent.be/shiny/';
     
 
-    $info = $credentials[database][collections]['plots']->findOne(array('_id'=>new MongoId($formValues->plot)));
+    $info = $collections['plots']->findOne(array('_id'=>new MongoId($formValues->plot)));
     if ($info['cumulativeid']) {
         $link .= 'coveragegraph/#dataset='.$formValues->plot;
         // $link .= 'coveragegraphs/#dataset='.$formValues->plot;
@@ -2611,7 +2780,7 @@ function onload_filterSubmit($formValues){
     // curl get naar backend als filter ingeladen dus als id als attr aan knopt hangt
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    // curl_setopt($ch, CURLOPT_URL, $credentials['site']['mongoquery'].'/filter/'.$filter_id);
+    // curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['mongoquery'].'/filter/'.$filter_id);
     curl_setopt($ch, CURLOPT_URL, 'http://localhost:3939/filter/'.$formValues->load_filter);
     $resp = curl_exec($ch);
     $response = json_decode($resp);
@@ -2623,19 +2792,20 @@ function onload_filterSubmit($formValues){
 function onsave_filterSubmit($formValues){
     $formValues = $formValues->formsaveFilter;
     $data['name']=$formValues->save_filter;
+    $name = $data['name'];
     $data = json_encode($data);
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_PROXY, null);
-    curl_setopt($ch, CURLOPT_URL, $credentials['site']['mongoquery'].'/filter/'.$data['name'].'/'.$formValues->filter_id);
+    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['mongoquery'].'/filter/'.$name.'/'.$formValues->filter_id);
     //curl_setopt($ch, CURLOPT_URL, 'http://localhost:3939/filter/52974b7f7412df2165050000');
     $resp = curl_exec($ch);
-    // $response = array(
-    //     'successJs' => "$('#filter_opt').toggle();",
-    //     'successPageHtml' => "Your filter has been saved as <b>".$data['name']."</b>."
-    // );
-    $response = array('failureNoticeHtml' => '<p>Something went wrong. Please try again.</p>');
+    $response = array(
+        'successJs' => "$('#filter_opt').toggle();",
+        'successPageHtml' => "Your filter has been saved as <b>".$name."</b>."
+    );
+    //$response = array('failureNoticeHtml' => '<p>Something went wrong. Please try again.</p>','failureJs'=> "console.log('".$_SESSION['credentials']['site']['mongoquery']."/filter/".$name."/".$formValues->filter_id."')");
     return $response;
 }
 function onload_viewSubmit($formValues){
@@ -2653,7 +2823,7 @@ function onsave_viewSubmit($formValues){
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_PROXY, null);
-    curl_setopt($ch, CURLOPT_URL, $credentials['site']['mongoquery'].'/view/'.$data['name'].'/'.$formValues->view_id);
+    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['mongoquery'].'/view/'.$data['name'].'/'.$formValues->view_id);
     //curl_setopt($ch, CURLOPT_URL, 'http://localhost:3939/filter/52974b7f7412df2165050000');
     $resp = curl_exec($ch);
     // $response = array(
@@ -2666,7 +2836,7 @@ function onsave_viewSubmit($formValues){
 function oncreate_viewSubmit($formValues){
     $formValues = $formValues->formsaveView;
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
 
     $view = array();
     if ($formValues->save_view){
@@ -2681,7 +2851,7 @@ function oncreate_viewSubmit($formValues){
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($view));
-        // curl_setopt($ch, CURLOPT_URL, $credentials['site']['mongoquery'].'/view');
+        // curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['mongoquery'].'/view');
         curl_setopt($ch, CURLOPT_URL, 'http://localhost:3939/view');
         $resp = curl_exec($ch);
         $response = json_decode($resp);
@@ -2696,15 +2866,15 @@ function oncreate_viewSubmit($formValues){
 }
 function onadd_projectSubmit($formValues){
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $formValues = $formValues->formSection;
-    $group_name = $credentials[database][collections]['groups']->findOne(
+    $group_name = $collections['groups']->findOne(
         array(
             '_id'=>new MongoId($formValues->groupid)
         )
     );
 
-    $create_project = $credentials[database][collections]['projects']->insert(
+    $create_project = $collections['projects']->insert(
         array(
             'description'=>$formValues->description,
             'groups'=>array(
@@ -2724,16 +2894,16 @@ function onadd_projectSubmit($formValues){
 }
 function onmanage_projectSubmit($formValues){
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
 
     $formValues = $formValues->formSection;
-    $find_query = $credentials[database][collections]['projects']->findOne(array('_id'=>new MongoId($formValues->projects_id)));
-    $group_name = $credentials[database][collections]['groups']->findOne(
+    $find_query = $collections['projects']->findOne(array('_id'=>new MongoId($formValues->projects_id)));
+    $group_name = $collections['groups']->findOne(
         array(
             '_id'=>new MongoId($formValues->group)
         )
     );
-    $update_query = $credentials[database][collections]['projects']->update(
+    $update_query = $collections['projects']->update(
         array('_id'=>new MongoId($formValues->projects_id)),
         array(
             '$set'=> array(
@@ -2755,7 +2925,7 @@ function onmanage_projectSubmit($formValues){
 }
 function onadd_sampleSubmit($formValues){
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
 
     // get sample info
     $sampleValues = $formValues->formSampleinfo;
@@ -2798,7 +2968,7 @@ function onadd_sampleSubmit($formValues){
         }
     }
 
-    $create_sample = $credentials[database][collections]['samples']->insert(
+    $create_sample = $collections['samples']->insert(
         array(
             'description'=>$sampleValues->description,
             'project'=>array(
@@ -2821,10 +2991,10 @@ function onadd_sampleSubmit($formValues){
 }
 function onmanage_sampleSubmit($formValues){
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
 
     $sampleValues = $formValues->formSection;
-    $db_sample = $credentials[database][collections]['samples']->findOne(
+    $db_sample = $collections['samples']->findOne(
         array(
             '_id'=>new MongoId($sampleValues->sampleid)
         )
@@ -2840,7 +3010,7 @@ function onmanage_sampleSubmit($formValues){
     }
     // $set_array['project'] = $projects;
     if ($db_sample['name'] == $sampleValues->samplename) {
-        $update_query = $credentials[database][collections]['samples']->update(
+        $update_query = $collections['samples']->update(
             array(
                 '_id'=>new MongoId($sampleValues->sampleid)
             ),
@@ -2854,7 +3024,7 @@ function onmanage_sampleSubmit($formValues){
     }
     else {
         // update sample_only values
-        $update_query = $credentials[database][collections]['samples']->update(
+        $update_query = $collections['samples']->update(
             array(
                 '_id'=>new MongoId($sampleValues->sampleid)
             ),
@@ -2863,7 +3033,7 @@ function onmanage_sampleSubmit($formValues){
             )
         ); 
         // update sample name (samples & variants)
-        $config = $credentials['job_config'];
+        $config = $_SESSION['credentials']['job_config'];
         $config['config_id'] = $sampleValues->config_id;
         $config['email_to'] = $sampleValues->email_to;
         $config['sampleid'] = $sampleValues->sampleid;
@@ -2872,7 +3042,7 @@ function onmanage_sampleSubmit($formValues){
         global $type, $job_scripts;
         $data = array('script'=>$job_scripts[$type].'.pl','config'=>json_encode($config)); 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $credentials['site']['qsubdeamon'].'/qsub');
+        curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['qsubdeamon'].'/qsub');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $resp = curl_exec($ch);
@@ -2893,7 +3063,7 @@ function onmanage_sampleSubmit($formValues){
 function onjobsSubmit($formValues){
     $formValues = $formValues->formSection;
     // var_dump($formValues);
-    $config = $credentials['job_config'];
+    $config = $_SESSION['credentials']['job_config'];
     foreach ($formValues as $key => $value) {
         if (is_array($value)){
             if (count($value) == 1 && $value[0] == "boolean_true"){
@@ -2940,21 +3110,21 @@ function onjobsSubmit($formValues){
     $data = array('script'=>$job_scripts[$type].'.pl','config'=>json_encode($config)); 
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $credentials['site']['qsubdeamon'].'/qsub');
+    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['qsubdeamon'].'/qsub');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $resp = curl_exec($ch);
     //var_dump($resp);
     curl_close($ch); 
     $answer = json_decode($resp);
-    if (isset($answer->config_id)){
-        $response = array(
-            'successJs' => "messageFade('<p>Your job (".$answer->config_id.") has been submitted successfully</p>');"
-        );
-    }
-    else {
-        $response = array('failureNoticeHtml' => 'Something went wrong. Please try again later.');
-    }
+    // if (isset($answer->config_id)){
+    //     $response = array(
+    //         'successJs' => "messageFade('<p>Your job (".$answer->config_id.") has been submitted successfully</p>');"
+    //     );
+    // }
+    // else {
+        $response = array('failureNoticeHtml' => 'Something went wrong. Please try again later.', 'failureJs' => "console.log('".json_encode($config)."')");
+    // }
     return $response;
 }
 function onregisterSubmit($formValues){
@@ -2962,11 +3132,11 @@ function onregisterSubmit($formValues){
     $url = $credentials->site->url;
     $domain = $credentials->site->domain;
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $formValues = $formValues->formSection;
     // set email to all upercase
     $email = strtoupper($formValues->email);
-    $check_result = $credentials[database][collections]['users']->find(array('email'=>$email))->count();
+    $check_result = $collections['users']->find(array('email'=>$email))->count();
     // username must be unique, else: error
     if ($check_result > 0) {
         $response = array('failureNoticeHtml' => 'Sorry, the email address '.$email.' already is in use.', 'failureJs' => "$('#email').val('').focus();$('#password').val('')");
@@ -2974,12 +3144,12 @@ function onregisterSubmit($formValues){
         $date = date('Y-m-d H:i:s');
         // everything is correct, we create a new user
         $insert_arr = array('email'=>$email,'password'=>$formValues->password,'firstname'=>$formValues->name->firstName,'lastname'=>$formValues->name->lastName,'institution'=>$formValues->institution,'departement'=>$formValues->departement,'country'=>$formValues->country,'active'=>0,'member_since'=>$date);
-        $user_insert = $credentials[database][collections]['users']->insert($insert_arr);
-        $groups_insert = $credentials[database][collections]['groups']->insert(array('admin'=>$insert_arr['_id'],'approved'=>array($insert_arr['_id']),'description'=>'Private group of user '.$email,'name'=>'Private','public'=>'no','users'=>array($insert_arr['_id'])));
-        $public_update = $credentials[database][collections]['groups']->update(array('name'=>'Public'),array('$addToSet'=>array('approved'=>$insert_arr['_id'],'users'=>$insert_arr['_id'])));
+        $user_insert = $collections['users']->insert($insert_arr);
+        $groups_insert = $collections['groups']->insert(array('admin'=>$insert_arr['_id'],'approved'=>array($insert_arr['_id']),'description'=>'Private group of user '.$email,'name'=>'Private','public'=>'no','users'=>array($insert_arr['_id'])));
+        $public_update = $collections['groups']->update(array('name'=>'Public'),array('$addToSet'=>array('approved'=>$insert_arr['_id'],'users'=>$insert_arr['_id'])));
         // // if a user was invited a group will be posted, we add the user to that group
         // if ($formValues->group != ''){       
-        //     $invited_groups_insert = $credentials[database][collections]['groups']->update(array('name'=>$formValues->group),array('$addToSet'=>array('approved'=>$insert_arr['_id'],'users'=>$insert_arr['_id'])));
+        //     $invited_groups_insert = $collections['groups']->update(array('name'=>$formValues->group),array('$addToSet'=>array('approved'=>$insert_arr['_id'],'users'=>$insert_arr['_id'])));
         // }
     
         // send cofirmation e-mail
@@ -3000,7 +3170,7 @@ function onregisterSubmit($formValues){
 function onuserSubmit($formValues){
     $credentials = read_credentials($_SESSION['config']);
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $formValues = $formValues->formSection;
 
     $user_update_array = array('$set'=>array('email'=>strtoupper($formValues->email),'firstname'=>$formValues->name->firstName,'lastname'=>$formValues->name->lastName,'institution'=>$formValues->institution,'departement'=>$formValues->departement,'country'=>$formValues->country));
@@ -3008,7 +3178,7 @@ function onuserSubmit($formValues){
         if ($formValues->new_pass != 'd41d8cd98f00b204e9800998ecf8427e' || $formValues->new_pass != ''){
             $user_update_array = array('$set'=>array('email'=>strtoupper($formValues->email),'password'=>$formValues->new_pass,'firstname'=>$formValues->name->firstName,'lastname'=>$formValues->name->lastName,'institution'=>$formValues->institution,'departement'=>$formValues->departement,'country'=>$formValues->country));
         }
-        $update_user = $credentials[database][collections]['users']->update(array('email'=>$formValues->email),$user_update_array);
+        $update_user = $collections['users']->update(array('email'=>$formValues->email),$user_update_array);
 
     $response = array('successJs' => 'messageFade("<p>Your information has been updated successfully.</p>");');
     return $response;
@@ -3035,16 +3205,16 @@ function onjoin_groupSubmit($formValues){
     $url = $credentials->site->url;
     $domain = $credentials->site->domain;
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $formValues = $formValues->formSection;
-    $user_select = $credentials[database][collections]['users']->find(array('email'=>$_SESSION['email']));
+    $user_select = $collections['users']->find(array('email'=>$_SESSION['email']));
     // Update DB --> add user(s) to group(s)
     foreach($user_select as $key=>$user){
-        $user_insert = $credentials[database][collections]['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$addToSet'=>array('users'=>$user['_id'])));
+        $user_insert = $collections['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$addToSet'=>array('users'=>$user['_id'])));
     }
-    $groups_admin=$credentials[database][collections]['groups']->find(array('_id'=>new MongoId($formValues->groups_id)));
+    $groups_admin=$collections['groups']->find(array('_id'=>new MongoId($formValues->groups_id)));
     foreach ($groups_admin as $key=>$admin_data){
-        $admin_select = $credentials[database][collections]['users']->find(array('_id'=>$admin_data['admin']));
+        $admin_select = $collections['users']->find(array('_id'=>$admin_data['admin']));
         $groupname = $admin_data['name'];
         foreach ($admin_select as $key=> $admin_email){
             $admin = $admin_email['email'];
@@ -3066,15 +3236,15 @@ function onapprove_groupSubmit($formValues){
     $url = $credentials->site->url;
     $domain = $credentials->site->domain;
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $formValues = $formValues->formSection;
-    $user = $credentials[database][collections]['users']->findOne(array('_id'=>new MongoId($formValues->user_id)));
+    $user = $collections['users']->findOne(array('_id'=>new MongoId($formValues->user_id)));
     $email = $user['email'];
-    $group = $credentials[database][collections]['groups']->findOne(array('_id'=>new MongoId($formValues->groups_id)));
+    $group = $collections['groups']->findOne(array('_id'=>new MongoId($formValues->groups_id)));
     $groupname = $group['name'];
     if ($formValues->approve == 1){     
         // Add userid to group (DB update)
-        $approve = $credentials[database][collections]['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$addToSet'=>array('approved'=>new MongoId($user['_id']))));
+        $approve = $collections['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$addToSet'=>array('approved'=>new MongoId($user['_id']))));
         
         // Send e-mail confirmation to added user
         $to      = $email;
@@ -3088,7 +3258,7 @@ function onapprove_groupSubmit($formValues){
         $response = array('successJs' => '$("#showhide").html("You have approved the request of <i>'.$email.'</i> to join group: <i>'.$groupname.'</i></p>");setTimeout(function(){$("#showhide").fadeOut("slow");$("#showhide").html();},2000);reload("1000");'); 
     }
     elseif ($formValues->approve == 0) {
-        $reject = $credentials[database][collections]['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$pull'=>array('users'=>new MongoId($formValues->user_id))));        
+        $reject = $collections['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$pull'=>array('users'=>new MongoId($formValues->user_id))));        
         // Send e-mail notification to user
         $to      = $email;
         $subject = '[seqplorer] Request to join group:'.$groupname;
@@ -3107,13 +3277,13 @@ function onunsubscribe_groupSubmit($formValues){
     $url = $credentials->site->url;
     $domain = $credentials->site->domain;
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $formValues = $formValues->formSection;
     // DB update ==> delete userid from group
-    $reject = $credentials[database][collections]['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$pull'=>array('users'=>new MongoId($formValues->user_id),'approved'=>new MongoId($formValues->user_id))));
-    $group=$credentials[database][collections]['groups']->findOne(array('_id'=>new MongoId($formValues->groups_id)));
-    $admin = $credentials[database][collections]['users']->findOne(array('_id'=>$group['admin']));
-    $user = $credentials[database][collections]['users']->findOne(array('_id'=>new MongoId($formValues->user_id)));     
+    $reject = $collections['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$pull'=>array('users'=>new MongoId($formValues->user_id),'approved'=>new MongoId($formValues->user_id))));
+    $group=$collections['groups']->findOne(array('_id'=>new MongoId($formValues->groups_id)));
+    $admin = $collections['users']->findOne(array('_id'=>$group['admin']));
+    $user = $collections['users']->findOne(array('_id'=>new MongoId($formValues->user_id)));     
     // Send e-mail notification to group admin
     $to      = $admin['email'];
     $subject = '[seqplorer] Unsubscription from group: '.$groupname;
@@ -3132,17 +3302,17 @@ function onmanage_groupSubmit($formValues){
     $url = $credentials->site->url;
     $domain = $credentials->site->domain;
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $formValues = $formValues->formSection;
     if ($formValues->public[0] == null){
         $formValues->public[0] = 'no';
     }
-    $udpate = $credentials[database][collections]['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$set'=>array('name'=>$formValues->groupname,'description'=>$formValues->description,'public'=>$formValues->public[0])));
-    $update_projects = $credentials[database][collections]['projects']->update(array('groups.id'=>new MongoId($formValues->groups_id)),array('$set'=>array('groups.$.name'=>$formValues->groupname)));
+    $udpate = $collections['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$set'=>array('name'=>$formValues->groupname,'description'=>$formValues->description,'public'=>$formValues->public[0])));
+    $update_projects = $collections['projects']->update(array('groups.id'=>new MongoId($formValues->groups_id)),array('$set'=>array('groups.$.name'=>$formValues->groupname)));
     // Get group admin from database    
-    $group=$credentials[database][collections]['groups']->findOne(array('_id'=>new MongoId($formValues->groups_id)));
-    $admin = $credentials[database][collections]['users']->findOne(array('_id'=>$group['admin']));
-    $new_admin = $credentials[database][collections]['users']->findOne(array('_id'=>new MongoId($formValues->admin)));
+    $group=$collections['groups']->findOne(array('_id'=>new MongoId($formValues->groups_id)));
+    $admin = $collections['users']->findOne(array('_id'=>$group['admin']));
+    $new_admin = $collections['users']->findOne(array('_id'=>new MongoId($formValues->admin)));
     // Assign new group admin   
     if ($formValues->admin != $admin['_id'].''){
         $to = $new_admin['email'];
@@ -3153,7 +3323,7 @@ function onmanage_groupSubmit($formValues){
                     'Reply-To: info@'.$domain. "\r\n" .
                     'X-Mailer: PHP/' . phpversion();
         mail($to, $subject, $message, $headers);
-        $udpate = $credentials[database][collections]['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$set'=>array('admin'=>new MongoId($formValues->admin))));
+        $udpate = $collections['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$set'=>array('admin'=>new MongoId($formValues->admin))));
     }
     // Invite others to join group
     if (count($formValues->invite) >= 1 && $formValues->invite[0] != ''){
@@ -3165,7 +3335,7 @@ function onmanage_groupSubmit($formValues){
             else {
                 $invite = $formValues->invite;
             }
-            $invite_query = $credentials[database][collections]['users']->find(array('email'=>strtoupper($invite)));       
+            $invite_query = $collections['users']->find(array('email'=>strtoupper($invite)));       
             $invite_check = $invite_query->count();
             // Unknown email, invite people to join NXT-VAT
             if ($invite_check == 0) {
@@ -3195,7 +3365,7 @@ function onmanage_groupSubmit($formValues){
                             'X-Mailer: PHP/' . phpversion();
                 mail($to, $subject, $message, $headers);
                 // create an inactive group link for this user
-                $adduser = $credentials[database][collections]['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$addToSet'=>array('users'=>$invite_id,'approved'=>$invite_id)));
+                $adduser = $collections['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$addToSet'=>array('users'=>$invite_id,'approved'=>$invite_id)));
             }
              
         }
@@ -3203,8 +3373,8 @@ function onmanage_groupSubmit($formValues){
     // Remove group member(s)
     if (count($formValues->delete) >= 1 && $formValues->delete[0] != ''){
         foreach ($formValues->delete as $key => $value){
-            $deleteuser = $credentials[database][collections]['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$pull'=>array('users'=>new MongoId($value),'approved'=>new MongoId($value))));
-            $user = $credentials[database][collections]['users']->findOne(array('_id'=>new MongoId($value)));
+            $deleteuser = $collections['groups']->update(array('_id'=>new MongoId($formValues->groups_id)),array('$pull'=>array('users'=>new MongoId($value),'approved'=>new MongoId($value))));
+            $user = $collections['users']->findOne(array('_id'=>new MongoId($value)));
             // Send email notification to deleted user
             $to      = $user['email'];
             $subject = '[NXVAT] Deletion from seqplorer group';
@@ -3223,20 +3393,20 @@ function onnew_groupSubmit($formValues){
     $url = $credentials->site->url;
     $domain = $credentials->site->domain;
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $formValues = $formValues->formSection;
     if ($formValues->public[0] == null){
         $formValues->public[0] = 'no';
     }
-    $group_check = $credentials[database][collections]['groups']->find(array('name'=>$formValues->groupname))->count();
+    $group_check = $collections['groups']->find(array('name'=>$formValues->groupname))->count();
     if ($group_check != 0) {
         $response = array('failureNoticeHtml' => 'This group already exist in our database.', 'failureJs' => "$('#groupname').val('').focus();");
     } 
     else {
         // create the group
-        $user = $credentials[database][collections]['users']->findOne(array('email'=>$_SESSION['email']));
+        $user = $collections['users']->findOne(array('email'=>$_SESSION['email']));
         $create_group = array('admin'=>$user['_id'],'approved'=>array($user['_id']),'description'=>$formValues->description,'name'=>$formValues->groupname,'public'=>$formValues->public[0],'users'=>array($user['_id']));
-        $credentials[database][collections]['groups']->insert($create_group);
+        $collections['groups']->insert($create_group);
         $groupid = $create_group['_id'].'';
         // Invite others to join group
         if (count($formValues->invite) >= 1 && $formValues->invite[0] != ''){
@@ -3248,7 +3418,7 @@ function onnew_groupSubmit($formValues){
                 else {
                     $invite = $formValues->invite;
                 }
-                $invite_query = $credentials[database][collections]['users']->find(array('email'=>strtoupper($invite)));       
+                $invite_query = $collections['users']->find(array('email'=>strtoupper($invite)));       
                 $invite_check = $invite_query->count();
                 // Unknown email, invite people to join NXT-VAT
                 if ($invite_check == 0) {
@@ -3278,7 +3448,7 @@ function onnew_groupSubmit($formValues){
                                 'X-Mailer: PHP/' . phpversion();
                     mail($to, $subject, $message, $headers);
                     // create an inactive group link for this user
-                    $adduser = $credentials[database][collections]['groups']->update(array('_id'=>new MongoId($groupid)),array('$addToSet'=>array('users'=>$invite_id,'approved'=>$invite_id)));
+                    $adduser = $collections['groups']->update(array('_id'=>new MongoId($groupid)),array('$addToSet'=>array('users'=>$invite_id,'approved'=>$invite_id)));
                 }
                  
             }
@@ -3292,19 +3462,19 @@ function onforgotSubmit($formValues){
     $url = $credentials->site->url;
     $domain = $credentials->site->domain;
     $db = connect_mongo();
-    $credentials[database][collections] = get_collections($db);
+    $collections = get_collections($db);
     $formValues = $formValues->formSection;
-    $query = $credentials[database][collections]['users']->find(array('email'=>strtoupper($formValues->email)));
+    $query = $collections['users']->find(array('email'=>strtoupper($formValues->email)));
     $query_count = $query->count();
     if ($query_count == 0) {
         $response = array('failureNoticeHtml' => 'Unknown user.', 'failureJs' => "$('#email').val('').focus();$('#password').val('')");
     } 
     // User exists --> continue
     else {
-        $user = $credentials[database][collections]['users']->findOne(array('email'=>strtoupper($formValues->email)));
+        $user = $collections['users']->findOne(array('email'=>strtoupper($formValues->email)));
         $new_pass = generatePassword();
         // Change db-entry
-        $credentials[database][collections]['users']->update(array("email"=>strtoupper($formValues->email)),array('$set'=>array("password"=>md5($new_pass))));
+        $collections['users']->update(array("email"=>strtoupper($formValues->email)),array('$set'=>array("password"=>md5($new_pass))));
         
         // send cofirmation e-mail
         $to      = $formValues->email;

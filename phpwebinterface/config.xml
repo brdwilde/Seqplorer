@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <site_config>
     <site>
-        <url>https://seqplorer.org/seqplorer/</url>
+        <url>https://seqplorer.org/</url>
         <domain>seqplorer.org</domain>
-        <api>http://localhost:3000</api>
-        <shiny>localhost/~brdwilde/shinyserver/</shiny>
+        <api>https://seqplorer.org/api</api>
+        <shiny>https://seqplorer.org/shiny/</shiny>
         <mailfrom>admin@seqplorer.org</mailfrom>
     </site>
     <database>
