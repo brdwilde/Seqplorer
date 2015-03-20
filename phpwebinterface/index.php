@@ -1,7 +1,6 @@
 <?php
 // Start session and check if user is allowed on this page
 session_start();
-session_destroy();
 
 header('Access-Control-Allow-Origin: *');
 
@@ -158,7 +157,7 @@ Released   : 20130313
 	<div id="wrapper">
 		<div id="header">
 			<div id="logo">
-				<a href="project.php"><img src="img/seqplorer_final.png" alt="" /></a>
+				<a href="https://www.seqplorer.org"><img src="img/seqplorer_final.png" alt="" /></a>
 			</div>
 			<div id="menu">
 				<ul>
