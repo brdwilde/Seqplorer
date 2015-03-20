@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<site_config>
+    <site>
+        <url>https://seqplorer.org/seqplorer/</url>
+        <domain>seqplorer.org</domain>
+        <api>http://localhost:3000</api>
+        <shiny>localhost/~brdwilde/shinyserver/</shiny>
+        <mailfrom>admin@seqplorer.org</mailfrom>
+    </site>
+    <database>
+        <dbname>seqplorer</dbname>
+        <host>localhost</host>
+        <port>27017</port>
+        <collections>
+            <configurations>configurations</configurations>
+            <counts>counts</counts>
+            <genome>genome</genome>
+            <groups>groups</groups>
+            <log>log</log>
+            <projects>projects</projects>
+            <samples>samples</samples>
+            <servers>servers</servers>
+            <users>users</users>
+            <vcfheader>vcfheader</vcfheader>
+            <variants>variants</variants>
+            <variants_unique>variants_unique_tmp</variants_unique>
+            <views>views</views>
+            <news>news</news>
+            <adv_filter>adv_filter</adv_filter>
+            <plots>plots</plots>
+        </collections>
+    </database>
+    <backend>
+        <scriptpath>/opt/sequencingtools/</scriptpath>
+        <job_config>
+            <email_from>admin@seqplorer.org</email_from>
+            <bitqc_db>seqplorer</bitqc_db>
+            <bitqc_config_coll>configurations</bitqc_config_coll>
+            <bitqc_genome_coll>genome</bitqc_genome_coll>
+            <bitqc_host>research</bitqc_host>
+            <bitqc_log_coll>log</bitqc_log_coll>
+            <bitqc_port>27017</bitqc_port>
+            <bitqc_server_coll>servers</bitqc_server_coll>
+            <server_id>seqplorer</server_id>
+            <variantscol>variants</variantscol>
+            <variants_unique_col>variants_unique</variants_unique_col>
+            <samplescol>samples</samplescol>
+            <countcol>counts</countcol>
+        </job_config>
+    </backend>
+</site_config> 
+
