@@ -1,0 +1,195 @@
+{
+    "_id": "seqplorer",
+    "executables": {
+        "R": {
+            "command": "R-2.15.1",
+            "version": "echo \"R.version.string\" | R-2.15.1 --vanilla"
+        },
+        "analysecovariate": {
+            "command": "java -Xmx4g -jar /opt/GenomeAnalysisTK-1.6-13-g91f02df/AnalyzeCovariates.jar",
+            "version": "java -jar /opt/GenomeAnalysisTK-1.6-13-g91f02df/AnalyzeCovariates.jar 2>&1 | awk '/version/{print $9, $10}' | sed 's/(//'| sed 's/): //'"
+        },
+        "bcftools": {
+            "command": "bcftools-0.1.19",
+            "version": "bcftools-0.1.19 2>&1 | grep Version: "
+        },
+        "bgzip": {
+            "command": "bgzip"
+        },
+        "bowtie": {
+            "command": "bowtie-0.12.7",
+            "version": "bowtie-0.12.7 --version | grep version"
+        },
+        "bunzip2": {
+            "command": "bunzip2"
+        },
+        "bwa": {
+            "command": "bwa",
+            "version": "bwa 2>&1 | grep Version"
+        },
+        "bzip2": {
+            "command": "bzip2"
+        },
+        "casava": {
+            "command": "CASAVA-1.6.0"
+        },
+        "ensemblAPI": {
+            "command": "Bio::EnsEMBL::Registry",
+            "perleval": [
+                "push @INC, ('/opt/bioperl-1.2.3','/opt/ensembl-api-72/ensembl/modules', '/opt/ensembl-api-72/ensembl-variation/modules','/opt/ensembl-api-72/ensembl-compara/modules','/opt/ensembl-api-72/ensembl-functgenomics/modules')",
+                "require Bio::EnsEMBL::Registry",
+                "require Bio::EnsEMBL::Variation::Utils::VEP"
+            ],
+            "host": "ensembl.database.server",
+            "user": "ensembluser",
+            "pass": "ensemblpassword",
+            "port": "3306"
+        },
+        "fastahack": {
+            "command": "fastahack"
+        },
+        "fastqc": {
+            "command": "fastqc-0.7.2",
+            "version": "fastqc-0.7.2 --version"
+        },
+        "fastx_trimmer": {
+            "command": "fastx_trimmer-0.0.13"
+        },
+        "gatk": {
+            "command": "java -Xmx4g -jar /opt/GenomeAnalysisTK-1.6-13-g91f02df/GenomeAnalysisTK.jar",
+            "version": "java -jar /opt/GenomeAnalysisTK-1.6-13-g91f02df/GenomeAnalysisTK.jar 2>&1 | awk '/version/{print $8, $9}' | sed 's/(//'| sed 's/): //'"
+        },
+        "gatk2": {
+            "command": "/opt/java/64/jre1.7.0_45/bin/java -Xmx4g -jar /opt/GenomeAnalysisTK-2.8-1-g932cd3a/GenomeAnalysisTK.jar",
+            "version": "/opt/java/64/jre1.7.0_45/bin/java -jar /opt/GenomeAnalysisTK-2.8-1-g932cd3a/GenomeAnalysisTK.jar 2>&1 | awk '/version/{print $8, $9}' | sed 's/(//'| sed 's/)://'"
+        },
+        "gunzip": {
+            "command": "gunzip"
+        },
+        "gzip": {
+            "command": "gzip"
+        },
+        "jobscripts": {
+            "path": "/opt/sequencingtools/jobs/",
+            "stagein": [
+                "PATH=$PATH: /opt/sequencingtools/jobs/"
+            ],
+            "version": "svn info /opt/sequencingtools/bitqc_jobs/ | grep Revision"
+        },
+        "mongofiles": {
+            "command": "mongofiles"
+        },
+        "picard_markduplicates": {
+            "command": "java -Xmx2g -jar /var/tmp/MarkDuplicates-1.59.jar",
+            "stagein": [
+                "cp -u /opt/picard-tools-1.59/MarkDuplicates.jar /var/tmp/MarkDuplicates-1.59.jar"
+            ],
+            "version": "java -jar /var/tmp/MarkDuplicates-1.59.jar --version 2>&1 | awk {'print $1'}"
+        },
+        "picard_reorder": {
+            "command": "java -Xmx2g -jar /opt/picard-tools-1.59/ReorderSam.jar",
+            "version": "java -jar /opt/picard-tools-1.59/ReorderSam.jar --version"
+        },
+        "picard_replacereadgroup": {
+            "command": "java -Xmx2g -jar /var/tmp/AddOrReplaceReadGroups-1.59.jar",
+            "stagein": [
+                "cp -u /opt/picard-tools-1.59/AddOrReplaceReadGroups.jar /var/tmp/AddOrReplaceReadGroups-1.59.jar"
+            ],
+            "version": "java -jar /var/tmp/AddOrReplaceReadGroups-1.59.jar --version 2>&1 | awk {'print $1'}"
+        },
+        "samtools": {
+            "command": "samtools-0.1.19",
+            "version": "samtools-0.1.19 2>&1 | grep Version"
+        },
+        "scripts": {
+            "path": "/opt/sequencingtools/scripts/",
+            "stagein": [
+                "PATH=$PATH: /opt/sequencingtools/scripts/"
+            ],
+            "version": "svn info /opt/sequencingtools/scripts/| grep Revision"
+        },
+        "sff2fastq": {
+            "command": "sff2fastq-0.8.0",
+            "version": "sff2fastq-0.8.0 -v"
+        },
+        "stampy": {
+            "command": "/opt/stampy-1.0.16/stampy.py",
+            "version": "/opt/stampy-1.0.16/stampy.py | grep -m 1 stampy"
+        },
+        "tabix": {
+            "command": "tabix",
+            "version": "tabix 2>&1 | grep Version"
+        },
+        "tophat": {
+            "command": "tophat2",
+            "version": "tophat2 -v"
+        },
+        "vcf-concat": {
+            "command": "vcf-concat-0.1.9",
+            "stagein": [
+                "cp -u /opt/vcftools_0.1.9/perl/Vcf.pm ."
+            ]
+        },
+        "vcf-merge": {
+            "stagein": [
+                "cp -u /opt/vcftools_0.1.9/perl/Vcf.pm ."
+            ],
+            "command": "vcf-merge-0.1.9"
+        },
+        "vcf-query": {
+            "stagein": [
+                "cp -u /opt/vcftools_0.1.9/perl/Vcf.pm ."
+            ],
+            "command": "vcf-query-0.1.9"
+        },
+        "vcf-sort": {
+            "command": "/opt/vcfsorter/vcfsorter.pl"
+        },
+        "vcf-validator": {
+            "stagein": [
+                "cp -u /opt/vcftools_0.1.9/perl/Vcf.pm ."
+            ],
+            "command": "vcf-validator-0.1.9"
+        },
+        "vcftools": {
+            "command": "vcftools-0.1.9",
+            "version": "vcftools-0.1.9 2>&1 | grep VCFtools"
+        },
+        "vcfutils": {
+            "command": "vcfutils-0.1.18.pl"
+        },
+        "wget": {
+            "command": "wget"
+        }
+    },
+    "hostname": "your.host.name",
+    "mail": "/usr/lib/sendmail",
+    "mongodb": {
+        "port": 27017,
+        "server": "localhost"
+    },
+    "paths": {
+        "datadir": {
+            "dir": "/store/sequencing/"
+        },
+        "genomedir": {
+            "dir": "/opt/genomes/"
+        },
+        "nodetempdir": {
+            "dir": "/mnt/"
+        },
+        "scratch": {
+            "dir": "/scratch/"
+        }
+    },
+    "pbs": {
+        "queue": "system",
+        "server": "pbsqueue.yourlocal.domain"
+    },
+    "perleval": [
+        "$ENV{'PATH'}.=': /opt/bin/';"
+    ],
+    "system": {
+        "mappingcores": 4
+    }
+}
