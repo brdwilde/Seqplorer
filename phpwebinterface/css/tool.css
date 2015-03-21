@@ -589,7 +589,7 @@ li.multi_select:hover, li.popup:hover, li.reset_view:hover, li.reset_filter:hove
 }
 
 .custom_sort{
-	background:url('../css/jquery-ui-cmgg/images/sort_both.png') no-repeat center right;
+	background:url('../css/jquery-ui-seqplorer/images/sort_both.png') no-repeat center right;
 }
 
 .opts{

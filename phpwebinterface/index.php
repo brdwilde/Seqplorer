@@ -168,7 +168,7 @@ Released   : 20130313
 					<?php } ?>
 					<li><a class='page_view headermenu pv_variants' pview='variants' href='' title='Show my projects'><img src='img/default_view.png' /></a></li>
 					<li><a class='page_view headermenu pv_normal' pview='only_variants' href='' title='Show all variants in the database'><img src='img/variants_view.png' /></a></li>
-					<li><a id='showdiv' class='headermenu' url='faq.php' href='https://github.com/brdwilde/Seqplorer/wiki' title='FAQ'><img src='img/faq.png' /></a></li>
+		<!--			<li><a id='showdiv' class='headermenu' url='faq.php' href='https://github.com/brdwilde/Seqplorer/wiki' title='FAQ'><img src='img/faq.png' /></a></li>-->
 					<li><a id='showdiv' class='headermenu' url='manual.php' href='https://github.com/brdwilde/Seqplorer/wiki' title='Manual'><img src='img/manual.png' /></a></li>
 					<li><a  class='popup headermenu' action='contact' href='https://github.com/brdwilde/Seqplorer/wiki' title='Contact'><img src='img/contact.png' /></a></li>
 					<?php if ($_SESSION['email'] == strtoupper('guest@seqplorer.org')){ ?>

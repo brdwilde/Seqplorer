@@ -612,12 +612,12 @@ $(document).ready( function() {
 		SEQPLORER.custom_sort(table_id, col, direction);
 		if (direction == 'desc'){
 			// Change arrow in column header
-			$(this).css("background","url('css/jquery-ui-cmgg/images/sort_desc.png') no-repeat center right");
+			$(this).css("background","url('css/jquery-ui-seqplorer/images/sort_desc.png') no-repeat center right");
 			$(this).attr("direction",'asc');
 		}
 		else if (direction == 'asc'){
 			// Change arrow in column header
-			$(this).css("background","url('css/jquery-ui-cmgg/images/sort_asc.png') no-repeat center right");
+			$(this).css("background","url('css/jquery-ui-seqplorer/images/sort_asc.png') no-repeat center right");
 			$(this).attr("direction",'desc');
 		}
 	});
@@ -1252,7 +1252,7 @@ function _table_build(table) {
 				$(".dataTables_scrollHeadInner .opts_th_"+table).html(html);
 			}
 			// Set background for custom sort to default
-			$(".custom_sort").css("background","url('css/jquery-ui-cmgg/images/sort_both.png') no-repeat center right");
+			$(".custom_sort").css("background","url('css/jquery-ui-seqplorer/images/sort_both.png') no-repeat center right");
 			// Execute table-specific redraw functions
 
 			if (table == 'projects'){
