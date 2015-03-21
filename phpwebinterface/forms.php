@@ -46,15 +46,13 @@ $buttons = array(
 );
 
 $job_scripts = array(
-    'export'                => 'bitqc_table2csv',
-    'create_plot'           => 'bitqc_table2csv',
+    'export'                => 'export',
+    'create_plot'           => 'export',
     'rename'                => 'rename_remove_sample',
     'remove'                => 'rename_remove_sample',
     'manage_sample'         => 'rename_remove_sample',
     'map_reads'             => 'map_reads',
-    'post_mapping_process'  => 'bitqc_post_mapping_process',
     'call_variants'         => 'call_variants',
-    'variants_to_mongo'     => 'bitqc_variants_to_mongo',
     'coverage'              => 'bitqc_gene_coverage_generator',
     'compare_variants'      => 'bitqc_compare_variants'
 );
