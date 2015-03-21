@@ -2780,8 +2780,7 @@ function onload_filterSubmit($formValues){
     // curl get naar backend als filter ingeladen dus als id als attr aan knopt hangt
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    // curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['mongoquery'].'/filter/'.$filter_id);
-    curl_setopt($ch, CURLOPT_URL, 'http://localhost:3939/filter/'.$formValues->load_filter);
+    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['api'].'/filter/'.$formValues->load_filter;
     $resp = curl_exec($ch);
     $response = json_decode($resp);
 
@@ -2798,14 +2797,14 @@ function onsave_filterSubmit($formValues){
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_PROXY, null);
-    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['mongoquery'].'/filter/'.$name.'/'.$formValues->filter_id);
+    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['api'].'/filter/'.$name.'/'.$formValues->filter_id);
     //curl_setopt($ch, CURLOPT_URL, 'http://localhost:3939/filter/52974b7f7412df2165050000');
     $resp = curl_exec($ch);
     $response = array(
         'successJs' => "$('#filter_opt').toggle();",
         'successPageHtml' => "Your filter has been saved as <b>".$name."</b>."
     );
-    //$response = array('failureNoticeHtml' => '<p>Something went wrong. Please try again.</p>','failureJs'=> "console.log('".$_SESSION['credentials']['site']['mongoquery']."/filter/".$name."/".$formValues->filter_id."')");
+    //$response = array('failureNoticeHtml' => '<p>Something went wrong. Please try again.</p>','failureJs'=> "console.log('".$_SESSION['credentials']['site']['api']."/filter/".$name."/".$formValues->filter_id."')");
     return $response;
 }
 function onload_viewSubmit($formValues){
@@ -2823,13 +2822,13 @@ function onsave_viewSubmit($formValues){
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_PROXY, null);
-    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['mongoquery'].'/view/'.$data['name'].'/'.$formValues->view_id);
+    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['api'].'/view/'.$data['name'].'/'.$formValues->view_id);
     //curl_setopt($ch, CURLOPT_URL, 'http://localhost:3939/filter/52974b7f7412df2165050000');
     $resp = curl_exec($ch);
-    // $response = array(
-    //     'successJs' => "$('#view_opt').toggle();",
-    //     'successPageHtml' => "Your view has been saved as <b>".$data['name']."</b>."
-    // );
+    $response = array(
+        'successJs' => "$('#view_opt').toggle();",
+        'successPageHtml' => "Your view has been saved as <b>".$data['name']."</b>."
+    );
     $response = array('failureNoticeHtml' => '<p>Something went wrong. Please try again.</p>');
     return $response;
 }
@@ -2851,8 +2850,7 @@ function oncreate_viewSubmit($formValues){
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($view));
-        // curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['mongoquery'].'/view');
-        curl_setopt($ch, CURLOPT_URL, 'http://localhost:3939/view');
+        curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['api'].'/view');
         $resp = curl_exec($ch);
         $response = json_decode($resp);
         $response = array(
@@ -3042,7 +3040,7 @@ function onmanage_sampleSubmit($formValues){
         global $type, $job_scripts;
         $data = array('script'=>$job_scripts[$type].'.pl','config'=>json_encode($config)); 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['qsubdeamon'].'/qsub');
+        curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['api'].'/qsub');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $resp = curl_exec($ch);
@@ -3110,7 +3108,7 @@ function onjobsSubmit($formValues){
     $data = array('script'=>$job_scripts[$type].'.pl','config'=>json_encode($config)); 
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['qsubdeamon'].'/qsub');
+    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['api'].'/qsub');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $resp = curl_exec($ch);
