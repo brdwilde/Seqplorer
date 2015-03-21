@@ -3117,14 +3117,14 @@ function onjobsSubmit($formValues){
     //var_dump($resp);
     curl_close($ch); 
     $answer = json_decode($resp);
-    // if (isset($answer->config_id)){
-    //     $response = array(
-    //         'successJs' => "messageFade('<p>Your job (".$answer->config_id.") has been submitted successfully</p>');"
-    //     );
-    // }
-    // else {
+    if (isset($answer->config_id)){
+        $response = array(
+            'successJs' => "messageFade('<p>Your job (".$answer->config_id.") has been submitted successfully</p>');"
+        );
+    }
+    else {
         $response = array('failureNoticeHtml' => 'Something went wrong. Please try again later.', 'failureJs' => "console.log('".json_encode($config)."')");
-    // }
+    }
     return $response;
 }
 function onregisterSubmit($formValues){
