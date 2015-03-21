@@ -2780,7 +2780,7 @@ function onload_filterSubmit($formValues){
     // curl get naar backend als filter ingeladen dus als id als attr aan knopt hangt
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['api'].'/filter/'.$formValues->load_filter;
+    curl_setopt($ch, CURLOPT_URL, $_SESSION['credentials']['site']['api'].'/filter/'.$formValues->load_filter);
     $resp = curl_exec($ch);
     $response = json_decode($resp);
 
