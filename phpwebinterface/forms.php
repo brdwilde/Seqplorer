@@ -3031,7 +3031,7 @@ function onmanage_sampleSubmit($formValues){
             )
         ); 
         // update sample name (samples & variants)
-        $config = $_SESSION['credentials']['job_config'];
+        $config = $_SESSION['credentials']['backend']['job_config'];
         $config['config_id'] = $sampleValues->config_id;
         $config['email_to'] = $sampleValues->email_to;
         $config['sampleid'] = $sampleValues->sampleid;
@@ -3061,7 +3061,7 @@ function onmanage_sampleSubmit($formValues){
 function onjobsSubmit($formValues){
     $formValues = $formValues->formSection;
     // var_dump($formValues);
-    $config = $_SESSION['credentials']['job_config'];
+    $config = $_SESSION['credentials']['backend']['job_config'];
     foreach ($formValues as $key => $value) {
         if (is_array($value)){
             if (count($value) == 1 && $value[0] == "boolean_true"){
