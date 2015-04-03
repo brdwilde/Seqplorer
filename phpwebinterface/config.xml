@@ -23,7 +23,7 @@
             <users>users</users>
             <vcfheader>vcfheader</vcfheader>
             <variants>variants</variants>
-            <variants_unique>variants_unique</variants_unique>
+            <variants_unique>variants_unique_tmp</variants_unique>
             <views>views</views>
             <news>news</news>
             <adv_filter>adv_filter</adv_filter>

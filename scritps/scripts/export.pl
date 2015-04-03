@@ -45,7 +45,7 @@ $BitQC->load(
 		'columns'		=> { required => 1, type => "string", array => 1},
 		'where' 		=> { required => 1, type => "string"},
 		'exportcol'		=> { required => 1, type => "string", default => 'variants'},
-		'uniquecol'		=> { type => "string", default => 'variants_unique_tmp'},
+		'uniquecol'		=> { type => "string", default => 'variants_unique'},
 		'filename'		=> { type => "string"},
 		'delimiter' 	=> { type => "string", default => "\t"},
 		'export'		=> { type => "string"},
