@@ -49,7 +49,7 @@ $GATK_DICT_INDEX =~ s/fasta$/dict/;
 $NAME .= ".vcf.gz" unless ( $NAME =~ /\.vcf\.gz$/ );
 
 # is the vcf file compressed?
-# TODO: make this check more intelligent is is bgzip compressed?
+# TODO: make this check more intelligent: is it bgzip compressed?
 if ($VCF =~ /\.gz$/){
 	# renome the input file
 	move( $VCF, $NAME."-unsorted.vcf.gz" ) 
@@ -63,7 +63,7 @@ if ($VCF =~ /\.gz$/){
 		command => "$GZIP_COMMAND -d $NAME-unsorted.vcf.gz"
 	);
 } else {
-	# renome the input file
+	# rename the input file
 	move( $VCF, $NAME."-unsorted.vcf" ) 
 		or copy( $VCF, $NAME."-unsorted.vcf.gz" )
 			or $BitQC->log_error(message => "Renaming/Copy of $VCF to $NAME failed");

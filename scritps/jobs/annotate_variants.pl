@@ -63,7 +63,7 @@ my $minposition = 999999999999999;
 my $chr;
 
 my $mongodb             = $BitQC->{DatabaseAdapter}->createDatabaseConnection();
-my $variants_collection = $mongodb->$VARIANTSCOLL;
+my $variants_collection = $mongodb->get_collection($VARIANTSCOLL);
 
 #Loop over the lines in the VCF file
 while (<$variantsfilepointer>) {

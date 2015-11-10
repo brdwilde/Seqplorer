@@ -184,7 +184,7 @@ my @unknown;
 
 # open a database collection to insert the variants
 my $mongodb             = $BitQC->{DatabaseAdapter}->createDatabaseConnection();
-my $variants_collection = $mongodb->$VARIANTSCOLL;
+my $variants_collection = $mongodb->get_collection($VARIANTSCOLL);
 
 while (<$vcf>) {    #Loop through lines
 	next if (/^#/);    # skip header
@@ -385,7 +385,7 @@ while (<$vcf>) {    #Loop through lines
 	  SAMPLE: foreach my $samplecounter ( 0 .. $#VCFSAMPLES ) {
 			my %genotype;
 			#skip of no call was done for this sample 
-			next SAMPLE if ( $fields[ 9 + $samplecounter ] eq './.' );
+			next SAMPLE if ( $fields[ 9 + $samplecounter ] && $fields[ 9 + $samplecounter ] eq './.' );
 			if ( $fields[ 9 + $samplecounter ] ) {
 				$genotype{id} = MongoDB::OID->new( value => $VCFSAMPLES[$samplecounter]{id});
 				$genotype{sn} = $VCFSAMPLES[$samplecounter]{name};

@@ -234,6 +234,7 @@ chop(@regions);
 
 my $fileindex = 0;
 my @vcffiles;
+my @vcf_sort_commands;
 
 foreach my $file (@files) {
 
@@ -433,7 +434,7 @@ foreach my $file (@files) {
 		##############################################################################
 		# CHECK IF VCF FILE IS INDEXED, IF NOT, MAKE LOCAL, SORT, COMPRESS AND INDEX
 		##############################################################################
-	
+
 		# create index file object
 		my $index = $file->duplicateFile({filetype => 'vcf.gz.tbi', ext => '.vcf.gz.tbi', compression => undef});
 
@@ -500,11 +501,9 @@ foreach my $file (@files) {
 			} 
 			# compress and index the file first
 			my $localfilename = $wd . $vcfname . ".vcf.gz";
-			$BitQC->createPBSJob(
-				cmd 		=> $JOB_VCF_SORT." --vcf $vcffile --name ".$wd.$vcfname,
-				name 		=> 'vcf_sort',
-				job_opts 	=> {cput   => '20000'}
-			);
+
+			push (@vcf_sort_commands, $JOB_VCF_SORT." --vcf $vcffile --name ".$wd.$vcfname);
+
 			undef(%vcfhash);
 			$vcfhash{file} 			= $localfilename;
 			$vcfhash{name} 			= $vcfname;
@@ -519,6 +518,14 @@ foreach my $file (@files) {
 
 	$fileindex++;
 }
+
+$BitQC->createPBSJob(
+	cmd 		=> \@vcf_sort_commands,
+	name 		=> 'vcf_sort',
+	job_opts 	=> {
+		cput   => '20000'
+	} 
+) if (@vcf_sort_commands);
 
 ######################################################################################
 # EXTRACT VARIANTS TO VCF FOR BAM INPUT FILES

@@ -117,7 +117,7 @@ foreach my $file (@files){
 
 	# Insert the info fields of the header into the database
 	my $mongodb = $BitQC->{DatabaseAdapter}->createDatabaseConnection();
-	my $vcfheader_collection = $mongodb->$VCFHEADERCOLL;
+	my $vcfheader_collection = $mongodb->get_collection($VCFHEADERCOLL);
 
 	# get the info fields
 	my $info = $BitQC->{DatabaseAdapter}->findEntryById(
@@ -179,7 +179,7 @@ foreach my $file (@files){
 		}
 	}
 
-	my $sample_collection = $mongodb->$SAMPLESCOLL;
+	my $sample_collection = $mongodb->get_collection($SAMPLESCOLL);
 
 	my @vcfsamples;
 
@@ -214,7 +214,7 @@ foreach my $file (@files){
 				save_mode => 1
 			);
 			$sample_id = $sample_obj->to_string;
-			$SAMPLES{$sample} = $sample_id;
+			#$SAMPLES{$sample} = $sample_id;
 		}
 
 		# update the configuration so the jobs can access the sample id's
