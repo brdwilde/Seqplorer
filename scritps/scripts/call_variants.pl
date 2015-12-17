@@ -13,7 +13,7 @@
 
 =head1 NAME
 
-Bitqc Call Variants - A script to call variants fromn next generation sequencing data
+Bitqc Call Variants - A script to call variants from next generation sequencing data
 
 =head1 SYNOPSIS
 

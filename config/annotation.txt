@@ -1,0 +1,143 @@
+sa.info.TYPE	Variant type	text	Type of event: SNP or INDEL
+sa.info.FQ	Same phred probability	numerical	Phred probability of all samples being the same
+sa.AD.alt	Alternate allele coverage	numerical	Allelic depths for first alternate allele
+sa.info.VDB	Variant distance bias	numerical	Variant Distance Bias
+sa.info.ActiveRegionSize	Active region size	numerical	Number of base pairs that comprise this active region
+sa.sn	Sample name	text	The sample name
+sa.info.MQ0	Mapping quality zero	numerical	Total Mapping Quality Zero Reads
+sa.info.PV4.tdb	Tail distance bias p-value	numerical	Tail distance bias p-value
+sa.comp.refn	Compared sample name	text	Name of the sample used in the comparison
+sa.info.SB	Strand bias	numerical	Strand Bias
+sa.GT	Genotype	text	The genotype called
+sa.AD.ref	Reference base coverage	numerical	Allelic depths for the reference base
+sa.info.DP4.frc	Reference forward coverage	numerical	Number of high-quality reference forward bases
+sa.info.DP4.rrc	Reference forward coverage	numerical	Number of high-quality reference reverse bases
+sa.info.DP4.vfc	Forward alternate coverage	numerical	Number of high-quality alternate forward bases
+sa.comp.rvc	Reference variant coverage	numerical	Coverage for the variant allele in the reference sample
+sa.info.EVENTLENGTH	Alternate allele max length	numerical	Max length of all the alternate alleles
+sa.AD.alt2	Second alternate allele coverage	numerical	Allelic depths for second most frequent alternate allele
+sa.info.extType	Event type (Extended)	text	Extended type of event: SNP, MNP, INDEL, or COMPLEX
+sa.info.culprit	Filter culprit	text	The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out
+sa.info.VQSLOD	Variant quality LOD score	numerical	Log odds ratio of being a true variant versus being false under the trained gaussian mixture model
+sa.info.ReadPosRankSum	Position score test	numerical	Z-score from Wilcoxon rank sum test of Alt vs. Ref read position bias
+sa.info.QD	Confidence over quality by depth	numerical	Variant Confidence/Quality by Depth
+sa.info.QDE	Confidence over quality by depth over haplotype	numerical	Confidence over quality by depth divided by the number of variants found on the haplotype that contained this variant
+sa.info.PV4.mqb	Mapping quality bias p value	numerical	Mapping quality bias p value
+sa.info.PV4.bqb	Base quality bias p value	numerical	Base quality bias p value
+sa.info.NumHapEval	Evaluated haplotypes number	numerical	Number of haplotypes that were chosen for evaluation in this active region
+sa.info.NVH	Number of variant haplotypes	numerical	Number of variants found on the haplotype that contained this variant
+sa.info.MQRankSum	Mapping quality rank sum score	numerical	Z-score From Wilcoxon rank sum test of Alt vs. Ref read mapping qualities
+sa.info.MQ	Mapping quality	numerical	Root-mean-square mapping quality of covering reads
+sa.info.MLEAF	Allele maximum likelihood expectation	numerical	Maximum likelihood expectation (MLE) for the allele frequency (not necessarily the same as the AF), for each ALT allele, in the same order as listed
+sa.info.InbreedingCoeff	Inbreeding coefficient	numerical	Inbreeding coefficient as estimated from the genotype likelihoods per-sample when compared against the Hardy-Weinberg expectation
+sa.info.INDEL	INDEL	bool	Indicates that the variant is an INDEL
+sa.info.HaplotypeScore	Haplotype score	numerical	Consistency of the site with at most two segregating haplotypes
+sa.info.FS	Stand bias Fisher	numerical	Phred-scaled p-value using Fisher's exact test to detect strand bias
+sa.info.DS	Downsampled	bool	Were any of the samples downsampled?
+sa.info.DP	Read depth	numerical	Raw read depth used for variant calling
+sa.info.BaseQRankSum	Base quality rank sum score	numerical	Z-score from Wilcoxon rank sum test of Alt Vs. Ref base qualities
+sa.info.AN	Allele number	numerical	Total number of alleles in called genotypes
+sa.info.AF1	First alternate allele frequency	numerical	Max-likelihood estimate of the first ALT allele frequency (assuming HWE)
+sa.info.AC1	First allele count	numerical	Max-likelihood estimate of the first ALT allele count (no HWE assumption)
+sa.info.AC	Genotypes allele count	numerical	Allele count in genotypes, for each ALT allele, in the same order as listed
+sa.comp.rra	sa.comp.rra	numerical	Ratio of the coverage for the variant allele over the total coverage in the reference sample
+sa.comp.refid	sa.comp.refid	mongo_id	Id of the sample used in the comparison
+sa.comp.pc	sa.comp.pc	numerical	Multiple testing corrected p value of the fisher test comparing variant counts in the sample and the reference sample
+sa.comp.p	Comparison p value uncorrected	numerical	The p value of the fishers test comparing read counts for the alternate and reference allele in the sample and the reference sample
+sa.comp.cra	sa.comp.cra	numerical	Coverage for the reference allele in the sample we are comparing
+sa.phased	Phased	bool	True if the genotype is phased
+sa.id	Sample ID	mongo_id	The mongo id of the sample
+sa.allelequal	Allele quality	numerical	The Phred scaled probability that a REF/ALT polymorphism exists at this site given sequencing data
+sa.PL	Genotype likelihoods	other	List of Phred-scaled genotype likelihoods
+sa.GQ	Genotype quality	numerical	The Genotype Quality, or Phred-scaled confidence that the true genotype is the one provided in the genotype field. In the diploid case, if GT is 0/1, then GQ is really L(0/1) / (L(0/0) + L(0/1) + L(1/1)), where L is the likelihood that the sample is 0/0, 0/1/, or 1/1 under the model built for the NGS dataset
+sa.info.DP4.vrc	Alt reverse coverage	numerical	Number of high-quality alt-reverse bases
+sa.comp.dra	Allele ratio difference	numerical	The difference in the ratio of the variant to reference allele in the sample and the reference sample
+sa.info.NumHapAssembly	Assembly haplotype number	numerical	Number of haplotypes created during the assembly of this active region
+sa.info.MLEAC	Allele count maximum likelihood expectation	numerical	Maximum likelihood expectation (MLE) for the allele counts (not necessarily the same as the AC), for each ALT allele, in the same order as listed
+sa.info.HRun	Homopolymer length	numerical	Largest Contiguous Homopolymer Run of Variant Allele In Either Direction
+sa.info.Dels	Spanning deletion read fraction	numerical	Fraction of Reads Containing Spanning Deletions
+sa.comp.rrc	sa.comp.rrc	numerical	Coverage for the reference allele in the reference sample
+sa.info.PV4.sb	Strand bias p value	numerical	Strand bias p value
+sa.comp.cvc	sa.comp.cvc	numerical	Coverage for the variant allele in the sample we are comparing
+sa.DP	Coverage	numerical	Number of high-quality reads or bases
+sa.comp.crc	sa.comp.crc	numerical	Coverage for the reference allele in the sample we are comparing
+sa.info.ClippingRankSum	Clipping rank sum score	numerical	Z-score From Wilcoxon rank sum test of Alt vs. Ref number of hard clipped bases
+sa.info.CLR	Constraint likelihood ratio	numerical	Log ratio of genotype likelihoods with and without the constraint
+sa.info.AF	Allele frequency	numerical	Allele Frequency, for each ALT allele, in the same order as listed
+sa.SP	Strand bias	numerical	Phred-scaled strand bias P-value
+sa.AD.alt3	Third alternate allele coverage	numerical	Allelic depths for third most frequent alternate allele
+sa.CLCAD2	Allelic depth CLC	numerical	Allelic depth, number of filtered reads supporting the alleles where the first element represents the reference and subsequent elements represent the alternatives in the order listed in the ALT column
+tr.allxrefs.database	Transcript external reference database	text	Transcript external reference database
+tr.allxrefs.description	Transcript external reference description	text	Transcript external reference description
+tr.allxrefs.display_id	Transcript external reference name	text	Transcript external reference identifier
+tr.canonical	Cannonical transcript	numerical	Indicates whether a transcript is to cannoncal transcript for a gene
+tr.cdnapos	cDNA position	numerical	The cDNA position of the variant on the transcript
+tr.cdnas	cDNA mutation name	text	The cDNA mutation notation for the variant
+tr.cdspos	coding DNA position	numerical	The position of the variant on the coding DNA strand
+tr.cods	tr.cods	text	The transcript codon at the variant position
+tr.con	Consequence	text	The consequence of this variant on the transcript
+tr.con_so	Alterante allele consequences	text	The consequences of alternate alleles at this position
+tr.domain.accession	Protein domain id	text	The protein domain Ensembl accession id
+tr.domain.end	Protein domain end	numerical	The protein domain ending position in peptide coordinates
+tr.domain.gend	Protein domain genomic end	numerical	The protein domain ending position in genomic coordinates
+tr.domain.gstart	Protein domain genomic start	numerical	The protein domain starting position in genomic coordinates
+tr.domain.name	Protein domain name	text	The protein domain name
+tr.domain.start	Protein domain start	numerical	The protein domain starting position in peptide coordinates
+tr.gene	Gene name	text	The common gene name
+tr.geneid	Ensembl gene id	text	The Ensembl unique gene id
+tr.peps	Peptide change	text	The peptide change string of the variant
+tr.pphe	Polyphen prediction	text	The effect of the variant according to the polyphen prediction
+tr.pphes	Polyphen score	numerical	The score for this variant for the polyphen prediction
+tr.ppos	Protein position	numerical	Start position of the variant on the protein
+tr.sift	Sift prediction	text	Sift prediction value for the variant
+tr.sifts	Sift score	numerical	Sift algorithm score of the variant
+tr.str	Transcript strand	text	The genomic strand the transcript is transcribed from
+tr.tr	Transcript id	text	The ensemble unique transcript identifier
+tr.allxrefs.release	Transcript external reference database release	text	Transcript external reference database release
+gene.geneid	Gene ID	text	The stable Ensembl identifier of the gene
+gene.gene	Gene name	text	The common name of the gene
+gene.allxrefs.release	Gene external reference relaese	text	Gene external reference database release
+gene.allxrefs.display_id	Gene external reference id	text	Gene external reference identifier
+gene.allxrefs.description	Gene external reference description	text	Gene external reference description
+gene.allxrefs.database	gene.allxrefs.database	text	Gene external reference database
+a	Alternate allele	text	Alternate allele
+alt.all	Alternate allele	text	The alternate allele base
+alt.freq	Alternative allele frequency	numerical	The frequency of the alterante allele in the population
+alt.pop	Alterante population	text	The alteranate allele population
+b	Genome build	text	Genome build
+c	Chromosome	text	The name of the chromosome
+conservation.diff	Conservation score difference	numerical	Difference in between the observed and expected score for the Genomic Evolutionary Rate Profiling (GERP) multiple alignment conservation score
+conservation.ex	Experimental conservation score	numerical	Expected score for the Genomic Evolutionary Rate Profiling (GERP) multiple alignment conservation score
+conservation.ob	Oserved conservation score	numerical	Observed score for the Genomic Evolutionary Rate Profiling (GERP) multiple alignment conservation score
+e	End	numerical	Genomic end position of variant (Ensembl VEP notation)
+karyo	Karyotype band	text	The karyotype band name of this genomic location
+name	Variant name	text	The name of this variants as it is known to the Ensembl database, mostly, but not limited to the dbSNP rs number
+phenotype.description	Phenotype	text	The biological pheonotype associated with this variant
+phenotype.p-value	Phenotype pvalue	numerical	The significance value of the statistical test of the phenotype association
+phenotype.risk_allele	Phenotype risk allele	text	The allele associated with the phenotype
+phenotype.source	Phenotype source	text	The external database the phenotype is derived from
+r	Reference base	text	The reference base of the genomic position of the variant
+regulation.display_label	Regulatory motif name	text	Name of regulatory motif
+regulation.end	Regulatory motif stop position	numerical	Genomic stop position of regulatory motif
+regulation.name	Regulatory motif Ensembl name	text	Ensembl database name of regulatory motif
+regulation.score	Regulatory motif score	numerical	Score of regulatory motif
+regulation.seq	Regulatory motif sequence	text	Sequence of regulatory motif
+regulation.start	Regulatory motif start position	numerical	Genomic start position of regulatory motif
+repeat.end	Repeat end	numerical	The stop position of the overlaying genomic repeat feature
+repeat.id	Repeat name	text	The Ensembl display id of the overlaying genomic repeat feature
+repeat.start	Repeat start	numerical	The start position of the overlaying genomic repeat feature
+s	Start	numerical	The chromosomal start position of the variant (Ensembl VEP notation)
+st	Variant subtype	text	"Variant subtype; one of transversion or transition"
+str	Strand	numerical	Genomic strand of the variant
+syn.source	Alternate name source	text	Alternative variant name source
+syn.synonyms	Alternate name	text	Alterantive names for the variant
+t	Variant type	text	"Variant type; one of substitution, insertion or deletion"
+v	Variant	text	Variant string in reference-base(s)/variant-base(s) format
+va	The variant allele (vcf format)	text	The variant allele according tot the VCF format specification
+vp	Variant position, VCF format	numerical	The position of this variant as specified by the VCF format specification
+vr	Reference base (vcf format)	text	The reference base according tot the vcf format specification for this variant
+dbsnp.min_allele	dbSNP minor allele	text	The minor allele according to dbSNP 
+dbsnp.maf	dbSNP minor allele frequency	numerical	The dbSNP minor allele frequency
+dbsnp.mac	dbSNP minor allele count	numerical	The dbSNP minor allele count
+dbsnp.anc_allele	dbSNP ancestral allele	text	The ancestral allele as reported by dbSNP
+phenotype.name	Phenotype name	text	The name of the phenotype associated with this variant

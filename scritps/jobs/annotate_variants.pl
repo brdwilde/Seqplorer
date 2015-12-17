@@ -325,7 +325,7 @@ if (%vcf_variants) {
 						$annotation{dbsnp}{maf}	+= 	$var_object-> minor_allele_frequency if ($var_object-> minor_allele_frequency);
 						#$annotation{dbsnp}{clinical} = $var_object->get_all_clinical_significance_statuses if ($var_object->get_all_clinical_significance_statuses);
 
-						# get all alternate alleles for this variatn position
+						# get all alternate alleles for this variant position
 						my @allele =
 						  @{ $var_object->get_all_Alleles() };
 
