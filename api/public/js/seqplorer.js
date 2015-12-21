@@ -171,7 +171,7 @@ function build_query(table){
 				where['groups']['id']['$in'] = responseText['groupids'];
 			}
 		);
-		console.log(where);
+		//console.log(where);
 	}
 	if (table == 'samples') {
 		if (this.projects.length){

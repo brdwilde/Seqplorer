@@ -6,14 +6,15 @@ use strict;
 sub get {
 	my $self = shift;
 	my $viewId = $self->stash('viewid');
-	if($viewId eq "variants" || $viewId eq "samples" || $viewId eq "projects"){
-		$self->render(template => "view/".$viewId, format => 'json');
-	} else {
+	# if($viewId eq "variants" || $viewId eq "samples" || $viewId eq "projects"){
+	# 	$self->render(template => "view/".$viewId, format => 'json');
+	# } else {
 		$self->app->log->debug("Controller: get view ".$viewId);
 		my $viewModel = $self->model('view');
 		my $viewReturn = $viewModel->get({'_id' => $viewId});
+
 		$self->render( json => $viewReturn );		
-	}
+	# }
 }
 
 sub create {

@@ -22,18 +22,35 @@ sub submit {
 		return;
 	}
 	$where = j( b( $self->param('where') )->encode('UTF-8') );
+
+	if ($collection eq "projects"){
+		my $groupModel = $self->model('group');
+		my $groupReturn = $groupModel->getmongoids();
+	
+		$where = {'groups' => { 'id' => { '$in' => $groupReturn->{groupids} }}};
+	}
+
 	
 	## Get view used to display this query
-	my $viewId = $self->param('view') || $collection;
+	my $viewId = $self->param('view');
+	my $fields;
 	my $viewModel = $self->model('view');
 	my $viewDoc = $viewModel->get({'_id' => $viewId});
-	
+	$self->app->log->debug("View response: ".Dumper($viewDoc));
+	foreach my $column (@{$viewDoc->{'columns'}}){
+		push (@	$fields, $column->{'queryname'}) if ($column->{'queryname'});		
+	}
+	#} 
+	if ($collection eq 'projects') {
+		$fields = ["_id","name",['groups','name'],['groups','id'],"description"];
+	}
+
 	my $queryOptions = {
 		'collection' => $collection,
 		'skip' => 0,
 		'limit' => 1,
 		'view' => $viewId,
-		'fields' => $viewDoc->{'fields'}
+		'fields' => $fields
 	};
 	
 	## Check 'advanced where' filter
@@ -47,21 +64,21 @@ sub submit {
 		}
 		#$advWhere = Seqplorer::Model::Query->add_elementMatch(\$advWhere,$viewDoc->{'elementmatch'});
 		
-		$advWhere = $queryModel->add_mongoid($advWhere,$viewDoc->{'mongoid'});
+		#$advWhere = $queryModel->add_mongoid($advWhere,$viewDoc->{'mongoid'});
 	}else{
 		## Add mongo ids where needed according to the view
-		$where = $queryModel->add_mongoid($where,$viewDoc->{'mongoid'});
+		#$where = $queryModel->add_mongoid($where,$viewDoc->{'mongoid'});
 		## Add elmatch where needed accordign to the view
 		$where = $queryModel->add_elementMatch($where,$viewDoc->{'elementmatch'});
 	}
-	$queryOptions->{'restrict'}=$viewDoc->{'restrict'} if(exists $viewDoc->{'restrict'});
+	$queryOptions->{'restrict'}=$viewDoc->{'restrict'} if (exists $viewDoc->{'restrict'});
 	#$self->app->log->debug('before object to dot: query = '.Dumper($where));
 	## Change to dotnotation
 	( $where, undef ) = $queryModel->object2dotnotation($where,'');
 	( $advWhere, undef ) = $queryModel->object2dotnotation($advWhere,'') if defined $advWhere;
 	use Data::Dumper;
-	$self->app->log->debug("## where query: ".Dumper($where));
-	$self->app->log->debug("## advWhere query: ".Dumper($advWhere));
+	#$self->app->log->debug("## where query: ".Dumper($where));
+	#$self->app->log->debug("## advWhere query: ".Dumper($advWhere));
 	
 	## Get query counts
 	my $iTotalRecords=$queryModel->count($where,$collection);
@@ -71,75 +88,78 @@ sub submit {
 	my $iTotalDisplayRecords=$queryModel->count($where,$collection);
 	
 	if($iTotalDisplayRecords > 0){
-	## All fields
-	# DEPRECIATED
-	
-	## Single col filter
-	#TODO ignored for now
-	
-	## Get sorting info
-	my %sortQuery;
-	if(defined $self->param('iSortingCols') && $self->param('iSortingCols') && $self->param('iSortCol_0') != 0 ){
-		my $sortCount=$self->param('iSortingCols')-1;
-		for my $i (0..$sortCount){
-			unless(defined $self->param('iSortCol_'.$i) && length $self->param('iSortCol_'.$i)){
-				next;
-			}
-			if($self->param('sSortDir_'.$i) eq 'desc'){
-				$sortQuery{$viewDoc->{'columns'}->[$self->param('iSortCol_'.$i)]->{'dotnotation'}}=1;
-			}
-			if($self->param('sSortDir_'.$i) eq 'asc'){
-				$sortQuery{$viewDoc->{'columns'}->[$self->param('iSortCol_'.$i)]->{'dotnotation'}}=-1;
-			}
-		}
-	}
-	
-	##set limit and skip
-	if(defined $self->param('iDisplayStart')){
-		$queryOptions->{'skip'}=$self->param('iDisplayStart');
-		$queryOptions->{'limit'}=$self->param('iDisplayLength');
-	}
-	$queryOptions->{'sort'} = \%sortQuery if (%sortQuery);
-	#execute query with where {"project":{"id":{"$in":["5130ca73721c5a7223000004"]}}}
-	$self->app->log->debug("## queryOptions: ".Dumper($queryOptions));
-	my $records=$queryModel->fetch($where, $queryOptions, $iTotalDisplayRecords );
-	
-	for my $record (@$records){
-		$self->app->log->debug('#### recordloop: record = '.Dumper($record));#.' to be dearrayed with '.Dumper($viewDoc->{'queryarray'}));
-		for my $queryArrayKey ( keys %{$viewDoc->{'queryarray'}} ){
-			my $queryArrayVal = $viewDoc->{'queryarray'}{$queryArrayKey};
-			$record->{$queryArrayKey}= $self->_dearray($record, $queryArrayVal);
-		}
-		my $row=[];
-		my $colIndex = 0;
-		for my $col ( @{$viewDoc->{'columns'}} ){
-			#$self->app->log->debug('col value = '.Dumper($col));
-			my %stash;
-			%stash = %{$col->{'stash'}} if defined $col->{'stash'};
-			delete $stash{'value'} if defined $stash{'value'};
-			for my $stashKey (keys %stash){
-				#check if some stash values are references to other columns
-				if(ref($stash{$stashKey}) eq 'HASH' && defined $stash{$stashKey}->{'ref_column'} ){
-					my $tmpVal = $stash{$stashKey}->{'ref_column'};
-					$stash{$stashKey}=$record->{$tmpVal};
+		## All fields
+		# DEPRECIATED
+		
+		## Single col filter
+		#TODO ignored for now
+		
+		## Get sorting info
+		my %sortQuery;
+		if(defined $self->param('iSortingCols') && $self->param('iSortingCols') && $self->param('iSortCol_0') != 0 ){
+			my $sortCount=$self->param('iSortingCols')-1;
+			for my $i (0..$sortCount){
+				unless(defined $self->param('iSortCol_'.$i) && length $self->param('iSortCol_'.$i)){
+					next;
+				}
+				if($self->param('sSortDir_'.$i) eq 'desc'){
+					$sortQuery{$viewDoc->{'columns'}->[$self->param('iSortCol_'.$i)]->{'dotnotation'}}=1;
+				}
+				if($self->param('sSortDir_'.$i) eq 'asc'){
+					$sortQuery{$viewDoc->{'columns'}->[$self->param('iSortCol_'.$i)]->{'dotnotation'}}=-1;
 				}
 			}
-			if(defined $col->{'dotnotation'} && defined $record->{$col->{'dotnotation'}}){
-				$stash{'value'} = $record->{$col->{'dotnotation'}};
+		}
+		
+		##set limit and skip
+		if(defined $self->param('iDisplayStart')){
+			$queryOptions->{'skip'}=$self->param('iDisplayStart');
+			$queryOptions->{'limit'}=$self->param('iDisplayLength');
+		}
+		$queryOptions->{'sort'} = \%sortQuery if (%sortQuery);
+		#execute query with where {"project":{"id":{"$in":["5130ca73721c5a7223000004"]}}}
+		
+		# fetch the results with the options set
+		$self->app->log->debug("## queryOptions: ".Dumper($where,$queryOptions));
+		my $records=$queryModel->fetch($where, $queryOptions);
+	
+		# run through the results formatting them
+		for my $record (@$records){
+			$self->app->log->debug('#### recordloop: record = '.Dumper($record));#.' to be dearrayed with '.Dumper($viewDoc->{'queryarray'}));
+			for my $queryArrayKey ( keys %{$viewDoc->{'queryarray'}} ){
+				my $queryArrayVal = $viewDoc->{'queryarray'}{$queryArrayKey};
+				$record->{$queryArrayKey}= $self->_dearray($record, $queryArrayVal);
 			}
-			if(!defined $col->{'template'} && defined $col->{'dotnotation'} ){
-				if(defined $record->{$col->{'dotnotation'}} && ref($record->{$col->{'dotnotation'}}) eq 'ARRAY' ){
-					$row->[$colIndex]= $viewModel->_applyTemplate({ 'name'=>'list' }, \%stash );
+			my $row=[];
+			my $colIndex = 0;
+			for my $col ( @{$viewDoc->{'columns'}} ){
+				#$self->app->log->debug('col value = '.Dumper($col));
+				my %stash;
+				%stash = %{$col->{'stash'}} if defined $col->{'stash'};
+				delete $stash{'value'} if defined $stash{'value'};
+				for my $stashKey (keys %stash){
+					#check if some stash values are references to other columns
+					if(ref($stash{$stashKey}) eq 'HASH' && defined $stash{$stashKey}->{'ref_column'} ){
+						my $tmpVal = $stash{$stashKey}->{'ref_column'};
+						$stash{$stashKey}=$record->{$tmpVal};
+					}
+				}
+				if(defined $col->{'dotnotation'} && defined $record->{$col->{'dotnotation'}}){
+					$stash{'value'} = $record->{$col->{'dotnotation'}};
+				}
+				if(!defined $col->{'template'} && defined $col->{'dotnotation'} ){
+					if(defined $record->{$col->{'dotnotation'}} && ref($record->{$col->{'dotnotation'}}) eq 'ARRAY' ){
+						$row->[$colIndex]= $viewModel->_applyTemplate({ 'name'=>'list' }, \%stash );
+					}else{
+						$row->[$colIndex]= $record->{$col->{'dotnotation'}} || '';
+					}
 				}else{
-					$row->[$colIndex]= $record->{$col->{'dotnotation'}} || '';
-				}
-			}else{
 					$row->[$colIndex]= $viewModel->_applyTemplate($col->{'template'}, \%stash );
+				}
+				$colIndex++;
 			}
-			$colIndex++;
+			push @{$output->{'aaData'}}, $row;
 		}
-		push @{$output->{'aaData'}}, $row;
-	}
 	}else{
 		$output->{'aaData'}=[ [ ( 'No results found in database!', map { '' } 2..$countColumns ) ]];
 	}

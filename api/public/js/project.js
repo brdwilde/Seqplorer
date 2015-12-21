@@ -1308,12 +1308,14 @@ function _table_build(table) {
 		// Send additional data to backend
 		"fnServerData": function ( sSource, aoData, fnCallback ) {
 			var where = SEQPLORER.build_query(table);
+			console.log(where);
 			aoData.push(
 				{"name": "collection", "value": table },
 				{"name": "view", "value": SEQPLORER.tables[table].view },
 				{"name": "where", "value": JSON.stringify(where) },
 				{"name": "advanced_filter", "value": JSON.stringify(SEQPLORER.tables[table].filter) }
 			);
+			console.log(aoData);
 			$.ajax( {
 				"dataType": 'json',
 				"type": "POST",

@@ -24,10 +24,10 @@ sub get {
 
 	# get the data in the database
 	my $cursor;
-	if ($userId){
+	if ($userId && $userId ne 'undef'){
 		$cursor = $groupCollection->find({ 'approved' => Mango::BSON::ObjectID->new($userId)});
 	} else {
-		$cursor = $groupCollection->find({ 'public' => true});
+		$cursor = $groupCollection->find({ 'public' => 'yes'});
 	}
 
 	my $groupdata;
@@ -55,7 +55,7 @@ sub getid {
 
 	# get the data in the database
 	my $cursor;
-	if ($userId){
+	if ($userId && $userId ne 'undef'){
 		$cursor = $groupCollection->find({ 'approved' => Mango::BSON::ObjectID->new($userId)});
 	} else {
 		$cursor = $groupCollection->find({ 'public' => 'yes'});
@@ -65,6 +65,36 @@ sub getid {
 	while(my $doc = $cursor->next){
 		last if(!defined $doc);
 		push (@$groupdata,$doc->{_id}."");
+	}
+
+	if ($groupdata){
+		return ({ Success => 1, Message => "Groups found", groupids => $groupdata});
+	} 
+
+	return ({ Success => 0, Message => "Groups not found", userid => $userId});
+}
+
+sub getmongoids {
+    my $self = shift;
+	my $userId = shift;
+
+    # get the configuration info to connect to database
+	my $config = $self->app->config;
+	my $groupscoll = $config->{database}->{collections}->{groups} ? $config->{database}->{collections}->{groups} : "groups";
+	my $groupCollection = $self->mongoDB->db->collection($groupscoll);
+
+	# get the data in the database
+	my $cursor;
+	if ($userId && $userId ne 'undef'){
+		$cursor = $groupCollection->find({ 'approved' => Mango::BSON::ObjectID->new($userId)});
+	} else {
+		$cursor = $groupCollection->find({ 'public' => 'yes'});
+	}
+
+	my $groupdata;
+	while(my $doc = $cursor->next){
+		last if(!defined $doc);
+		push (@$groupdata,$doc->{_id});
 	}
 
 	if ($groupdata){

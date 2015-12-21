@@ -6,6 +6,7 @@ sub get {
 	my $self = shift;
 	$self->app->log->debug("Controller: get group info");
 	my $userId = $self->stash('userid');
+	$userId = $self->session('userid') unless ($userId);
 
 	my $groupModel = $self->model('group');
 	my $groupReturn = $groupModel->getid($userId);

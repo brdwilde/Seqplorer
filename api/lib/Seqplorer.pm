@@ -10,8 +10,6 @@ use Mojolicious::Plugin::JSONConfig;
 use Mojolicious::Plugin::Authorization;
 use Mojolicious::Plugin::Mail;
 
-use Data::Dumper::Simple;
-
 # This method will run once at server start
 sub startup {
 	my $self = shift;
@@ -20,16 +18,15 @@ sub startup {
 
 	# get the confguration file
 	my $configfile = '';
- 	$configfile = 'config.json' if ( -e 'config.json' );
- 	$configfile = '../config.json' if ( -e '../config.json' );
- 	$configfile = '../../config.json' if ( -e '../../config.json' );
- 	$configfile = '/etc/seqplorer/config.json' if ( -e 'etc/seqplorer/config.json' );
+ 	$configfile = 'seqplorer.json' if ( -e 'seqplorer.json' );
+ 	$configfile = '../seqplorer.json' if ( -e '../seqplorer.json' );
+ 	$configfile = '../../seqplorer.json' if ( -e '../../seqplorer.json' );
+ 	$configfile = '/etc/seqplorer/seqplorer.json' if ( -e '/etc/seqplorer/seqplorer.json' );
 	#my $config = plugin JSONConfig => {file => $configfile};
+
 	my $config = $self->plugin('JSONConfig',{
 		file => $configfile
 	});
-
-	#$self->plugin('proxy');
 
 	$self->plugin('mail',{
 		from => $config->{mailfrom} ? $config->{mailfrom} : '',
@@ -87,10 +84,6 @@ sub startup {
 
 	#my $auth_r = $r->under('/user/login')->to('user#login');
 
-	# redirect to other service or deamon (configured in site->direction)
-	# $r->route('/redirect/:direction')->to('proxy#redirect');
-	# $r->route('/qsub/:jobid', jobid => qr/\d+/ )->via('GET')->to('qsub#get'); TODO
-	
 	# login and out
 	$r->get('/logout')->to('user#logout');
 	$r->post('/login')->to('user#authenticate');
@@ -106,7 +99,7 @@ sub startup {
 	$r->post('/user/addrole/:userid')->over(is => 'admin')->to('user#addrole');
 	$r->delete('/user/:userid')->over(is => 'admin')->to('user#delete');
 
-	# anyone can get groups eitehr by user id or all public groups
+	# anyone can get groups either by user id or all public groups
 	$r->get('/group')->to('group#get');
 	$r->get('/group/:userid')->to('group#get');
 

@@ -57,46 +57,61 @@ sub fetch {
 	my $options = shift;
 	my @returnRows;
 	#my $view = Seqplorer::Model::View->get({_id => $options->{'view'}});
-	$self->app->log->debug('fetch: in collection '.$options->{'collection'}.' and where = '.Dumper($where).' options = '.Dumper($options));
+	#$self->app->log->debug('fetch: in collection '.$options->{'collection'}.' and where = '.Dumper($where).' options = '.Dumper($options));
+
+	# get us a cursor on the requested collections
 	my $cursor = $self->mongoDB->db->collection($options->{'collection'})->find( $where );
+
+	# get all the options and build the query
 	$cursor->sort($options->{'sort'}) if (defined $options->{'sort'});
-	#$cursor->fields(map { $_ => 1 } @{$options->{'fields'}})
+	
 	if (defined $options->{'fields'}){
 		my $hashFields;
-		map { $hashFields->{$_} = 1 } @{$options->{'fields'}};
-		#$self->app->log->debug('fetch: fields = '.Dumper($hashFields) );
+		foreach my $field (@{$options->{'fields'}}){
+			#if (ref($field) eq 'ARRAY') {
+				$hashFields->{join('.',@{$field})} = 1;
+			#} else {
+			#	$hashFields->{$field} = 1;
+			#}
+		}
 		$cursor->fields($hashFields);
 	}
 	$cursor->limit($options->{'limit'}) if (defined $options->{'limit'});
 	$cursor->skip($options->{'skip'}) if (defined $options->{'skip'} && $options->{'skip'} > 0);
+
 	#$cursor->slave_okay(1);
 	#$self->app->log->debug('fetch: in collection first result = '.Dumper($cursor->next) );
+
+	# restriction rules
+	# we create some restriction rules to limit users viewing other users data!!
+	# at this time we only have one restriction rule for the variants database
+	my $config = $self->app->config;
+	my $variants = $config->{database}->{collections}->{variants} ? $config->{database}->{collections}->{variants} : "variants";
+	
 	my @restrictionData;
-	if(defined $options->{'restrict'}){
-		$self->app->log->debug('fetch: found restrict');
-		foreach my $restrict (@{$options->{'restrict'}}){
+	if($options->{'collection'} eq $variants){
+		my 	@restrict = ({"find" => ["sa"],"restrict" => ["id"]});
+
+		foreach my $restrict (@restrict){
 			$restrict->{'values'}=[];
+			
+			# create the full key set for the restriction fields
 			$restrict->{'setKey'}=[@{$restrict->{'find'}}];
 			push @{$restrict->{'setKey'}}, @{$restrict->{'restrict'}};
+
+			# manipulate the where fields to obtain the restriction data
 			my $whererestrict = {%{$where}};
-			$self->app->log->debug('fetch: set whererestrict before loop = '.Dumper($whererestrict) );
+
 			my @lookupKeys;
 			foreach (@{$restrict->{'setKey'}}){
 				push @lookupKeys, $_;
 				if(defined $whererestrict->{join('.',@lookupKeys)} ){
 					$whererestrict=$whererestrict->{join('.',@lookupKeys)};
 				}
-				$self->app->log->debug('fetch: set whererestrict in loop if key was: '.join('.',@lookupKeys).' = '.Dumper($whererestrict) );
-				
-				#push @{$restrict->{'setKey'}}, $_;
 			}
-			#if (ref($whererestrict) eq "HASH"){
-			#	foreach my $key (keys %{$whererestrict}){
-			#		$whererestrict = $whererestrict->{$key} if ($key =~ /^\$/);
-			#	}
-			#}
-			$self->app->log->debug('fetch: after set whererestrict in loop = '.Dumper($whererestrict) );
-			$self->app->log->debug('fetch: restrict in loop = '.Dumper($restrict) );
+
+			#$self->app->log->debug('fetch: after set whererestrict in loop = '.Dumper($whererestrict) );
+			#$self->app->log->debug('fetch: restrict in loop = '.Dumper($restrict) );
 			
 			# find the element we want to match the document elements to
 			# by descending into the where using the restrict array
@@ -119,23 +134,11 @@ sub fetch {
 			push @restrictionData, $restrict;
 		}
 	}
-	$self->app->log->debug('fetch: restrictionData = '.Dumper(\@restrictionData) );
+	#$self->app->log->debug('fetch: restrictionData = '.Dumper(\@restrictionData) );
 	
 	#my @all;
 	#eval { @all=$cursor->all; };
 	while(my $doc = $cursor->next){
-	#foreach my $doc (@all){
-	#my $doc;
-	#eval { $doc = $cursor->next; 1};
-	#my $doc;
-	#$doc = $cursor->next;
-	#$self->app->log->debug('fetch: in next loop doc:'.Dumper($doc) );
-	
-	#my $isOK = 1;
-	#while(1 == 1){
-		#my $doc;
-		#eval { $doc = $cursor->next; };
-		$self->app->log->debug('fetch: in next loop doc:'.Dumper($doc->{'_id'}) );
 		last if(!defined $doc);
 		#$self->app->log->debug('fetch: in next loop doc:'.Dumper($doc) );
 		if(scalar(@restrictionData) > 0){
@@ -146,25 +149,22 @@ sub fetch {
 					my %thisDoc = %{$subDoc};
 					foreach (@{$restrict->{'restrict'}}){
 						if(defined $subDoc->{$_}){
-							#$self->app->log->debug('fetch: found subdoc for restrict key :'.Dumper($_) );
+							# a sub document was found -> we move one level deeper
 							$subDoc=$subDoc->{$_};
 						}
-						#$self->app->log->debug('fetch: compare restrict value = '.Dumper($restrict->{'values'}).' with subDoc value '.Dumper($subDoc) );
 						if( grep { $subDoc eq $_ } @{$restrict->{'values'}} ){
-							$self->app->log->debug('fetch: compare was EQUAL restrict value = '.Dumper($restrict->{'values'}).' with subDoc value '.Dumper($subDoc) );
+							# this sub document is in list of restricted values -> add to approved docs
 							push @approvedDocs, \%thisDoc;
 						}
 					}
 				}
-				$self->app->log->debug('fetch: reset doc array = '.Dumper($restrict->{'setKey'}).' approved = '.Dumper(@approvedDocs) );
-				
+				#$self->app->log->debug('fetch: reset doc array = '.Dumper($restrict->{'setKey'}).' approved = '.Dumper(@approvedDocs) );
 				$doc = $self->_sethashbyarray($doc, $restrict->{'setKey'}, \@approvedDocs);
 			}
 		}
-		$self->app->log->debug('fetch: restricted doc :'.Dumper($doc) );
+		#$self->app->log->debug('fetch: restricted doc :'.Dumper($doc) );
 		push @returnRows, {%{$doc}};
-	}
-	
+	}	
 	return \@returnRows;
 }
 
@@ -294,7 +294,7 @@ sub object2dotnotation{
 			# we convert each to its dot notationn mongoid
 			# my @operators =('$ne','$in','$all','$nin','$elemMatch','$and','$or','$nor');
 			if ($key =~ /^\$/){
-				$self->app->log->debug('object2dotnotation: key = '.Dumper($key).' value = '.Dumper($value->{$key}));
+				#$self->app->log->debug('object2dotnotation: key = '.Dumper($key).' value = '.Dumper($value->{$key}));
 				#my $returnobj = $self->object2dotnotation($value->{$key}, '');
 				my ($returnobj, $returnkey) = $self->object2dotnotation($value->{$key}, '');
 				if($dotkey eq ''){
@@ -324,7 +324,7 @@ sub object2dotnotation{
 		}
 	} elsif (ref($valueArg) eq "ARRAY") {
 		$value=[@{$valueArg}];
-		$self->app->log->debug('object2dotnotation:  array ref section, value= '.Dumper($value));
+		#$self->app->log->debug('object2dotnotation:  array ref section, value= '.Dumper($value));
 		# arrays can contain values but also hashes
 		# we convert each element to its dot notation 
 		foreach my $val (@{$value}){
@@ -352,7 +352,7 @@ sub _gethashbyarray{
 	#$self->app->log->debug('_gethashbyarray: arg of type '.ref($hashArg).', value = '.Dumper($hashArg));
 	my $hash = {%{$hashArg}};
 	my $array = shift;
-	$self->app->log->debug('_gethashbyarray: array of type '.ref($array).', value = '.Dumper($array));
+	#$self->app->log->debug('_gethashbyarray: array of type '.ref($array).', value = '.Dumper($array));
 	
 	# we descend into the hash using the array values as keys
 	foreach my $key (@{$array}){
@@ -362,7 +362,7 @@ sub _gethashbyarray{
 			}
 		}
 	}
-	$self->app->log->debug('_gethashbyarray: return of type '.ref($hash));#.', value = '.Dumper($hash));
+	#$self->app->log->debug('_gethashbyarray: return of type '.ref($hash));#.', value = '.Dumper($hash));
 	return ($hash);
 }
 
@@ -373,7 +373,7 @@ sub _sethashbyarray{
 	my $arrayArg = shift;
 	my @array = @{$arrayArg};
 	my $set = shift;
-	$self->app->log->debug('_sethashbyarray: hash '.Dumper($hash).', array = '.Dumper($arrayArg).', set = '.Dumper($set));
+	#$self->app->log->debug('_sethashbyarray: hash '.Dumper($hash).', array = '.Dumper($arrayArg).', set = '.Dumper($set));
 	
 	if (ref($hash) eq "HASH"){
 		my %return;
@@ -390,7 +390,7 @@ sub _sethashbyarray{
 		# return a ref to the newly created hash
 		return (\%return);
 	}else{
-		# if we did not recaive a hash, we return the value we received
+		# if we did not receive a hash, we return the value we received
 		return ($set);
 	}
 }

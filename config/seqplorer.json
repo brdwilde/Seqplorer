@@ -1,15 +1,14 @@
 {
   "site": {
-    "url": "localhost:3000",
-    "phpforms": "localhost:8080/~brdwilde/Seqplorer/webinterface/forms.php",
+    "url": "www.seqplorer.org",
     "domain": "seqplorer.org",
-    "api": "http://localhost:3000",
-    "qsub": "http://pbsqueue.cmgg.ugent.be:4001",
-    "shiny": "localhost/~brdwilde/shinyserver/",
-    "mailfrom": "admin@seqplorer.org"
+    "qsub": "http://jobqueue.localdomain:port",
+    "shiny": "http://shinyserver.localdomain:port",
+    "mailfrom": "admin@seqplorer.org",
+    "demo":0
   },
   "database": {
-    "dbname": "nxtvat",
+    "dbname": "seqplorer",
     "host": "localhost",
     "port": "27017",
     "collections": {
@@ -32,17 +31,17 @@
     }
   },
   "backend": {
-    "scriptpath": "/home/brdwilde/workspace/sequencing_tools/scripts/",
+    "scriptpath": "/local/working/dir/script/",
     "job_config": {
       "email_from": "admin@seqplorer.org",
-      "bitqc_db": "nxtvat",
+      "bitqc_db": "seqplorer",
       "bitqc_config_coll": "configurations",
       "bitqc_genome_coll": "genome",
       "bitqc_host": "research",
       "bitqc_log_coll": "log",
       "bitqc_port": "27017",
       "bitqc_server_coll": "servers",
-      "server_id": "nxtvat",
+      "server_id": "seqplorer",
       "variantscol": "variants",
       "variants_unique_col": "variants_unique",
       "samplescol": "samples",

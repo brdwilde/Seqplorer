@@ -28,6 +28,21 @@
       }
     },
     {
+      "sName": "Select",
+      "bSearchable": false,
+      "bSortable": false,
+      "template": "<input class='multi_select' type='checkbox' showtable='samples' projectsid='<%%= $id %>' projectname='<%%= $name %>'>",
+      "stash": {
+        "id": {
+          "ref_column": "_id"
+        },
+        "name": {
+          "ref_column": "name"
+        }
+      },
+      "showtable": "samples"
+    },
+    {
       "sName": "ID",
       "showable": false,
       "bVisible": false,
@@ -73,21 +88,6 @@
       "queryname": [
         "description"
       ]
-    },
-    {
-      "sName": "Select",
-      "bSearchable": false,
-      "bSortable": false,
-      "template": "<input class='multi_select' type='checkbox' showtable='samples' projectsid='<%%= $id %>' projectname='<%%= $name %>'>",
-      "stash": {
-        "id": {
-          "ref_column": "_id"
-        },
-        "name": {
-          "ref_column": "name"
-        }
-      },
-      "showtable": "samples"
     }
   ]
 }
