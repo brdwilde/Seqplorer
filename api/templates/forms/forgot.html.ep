@@ -1,0 +1,8 @@
+%= include 'forms/formheader', title => 'Forgot password'
+<form>
+	<ul>
+		<li> <label>E-mail </label>
+			<input type="text" size="30"  name="email" id="email" class="required" title="Please provide your e-mail adress, we will send you a link allowing you to reset your password"></li>
+		<li><input type="submit" id="forgotbutton"><div id="messagearea"></div></li>
+	</ul>
+</form>	

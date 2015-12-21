@@ -1,0 +1,29 @@
+<a id="hidediv" href="">
+<img class="cancel_popup" src="img/back.png">
+</a>
+<div>
+	<h1>Add project</h1>
+	<fieldset>
+		<form action="login" method="post">
+			<ul>
+				<li> <label for="name">group: </label>
+					<select id="groupid" name="groupid" style="width:long">
+						<option value="" selected="selected" disabled="disabled"> - Select group - </option>
+					</select>
+					<a class='popup' keep_visible='1' action='create_group' href=''> or create a new group</a>
+				</li>
+				<li> <label for="projectname">Project Name:	</label>
+					<input type="text" id="projectname" name="projectname" style="width: 18em;">
+				</li>
+				<li>
+					<label for="description">Description:</label>
+					<textarea id="description" name="description" class="textArea" style="width: 40em;height: 6em;"></textarea>
+				</li>
+				<li>
+					<label></label>
+					<input type="submit" id="create" name="create" value="Create project">
+				</li>
+			</ul>
+		</form>	
+	</fieldset>
+</div>

@@ -15,76 +15,69 @@ has [qw/ app mongoDB /];
 
 sub get {
     my $self = shift;
-		my $config = shift;
-		my $viewCollection = $self->mongoDB->db->collection('views');
-		my $viewId = $config->{'_id'};
-		if($viewId eq "variants"){
-			$viewId = "50d1def9721c5a2c32000000";
-		}elsif($viewId eq "samples"){
-			$viewId = "50d1df0a721c5a1d31000000";
-		}elsif($viewId eq "projects"){
-			$viewId = "50d1df83721c5a0f33000000";
+	my $config = shift;
+	my $viewCollection = $self->mongoDB->db->collection('views');
+	my $viewId = $config->{'_id'};
+	my $cache = $self->app->cache;
+	if( defined $cache->get($viewId) ){
+		$self->app->log->debug("Cache hit for get view: $viewId");
+		return $cache->get($viewId);
+	}
+	$self->app->log->debug("Cache miss for get view: $viewId");
+	my $viewID_OID = ( $viewId =~ /^[0-9a-fA-F]{24}$/ ) ? Mango::BSON::ObjectID->new($viewId) : { '_id' => $viewId };
+	$self->app->log->debug("Get view from mongo: $viewId = $viewID_OID => ".ref($viewID_OID));
+	my $viewDoc = $viewCollection->find_one($viewID_OID);
+	#$self->app->log->debug("na find_one");
+	my %viewReturn;
+	$viewReturn{'columns'}=();
+	$viewReturn{'_id'}=$viewDoc->{'_id'};
+	$viewReturn{'view'}=$viewDoc->{'_id'};
+	$viewReturn{'dom'}=$viewDoc->{'dom'};
+	$viewReturn{'restrict'}=$viewDoc->{'restrict'};
+	my $collection = $viewDoc->{'collection'};
+	$viewReturn{'collection'}=$collection;
+	$viewReturn{'fields'}=();
+	$viewReturn{'mongoid'}=();
+	use Data::Dumper;
+	#$self->app->log->debug("voor collection_names ".Dumper($self->mongoDB->db->collection_names));
+	#my $existsUnique = grep { /${collection}_unique'/ } @{$self->mongoDB->db->collection_names};
+	my $existsUnique=1;
+	for my $column (@{$viewDoc->{'columns'}}) {
+		#$self->app->log->debug("viewDoc is: ".Dumper($column	));
+		#create dot notation from queryname
+		if(defined $column->{'queryname'}){
+			$column->{'dotnotation'} = join('.',@{$column->{'queryname'}});
 		}
-		my $cache = $self->app->cache;
-		if( defined $cache->get($viewId) ){
-			$self->app->log->debug("Cache hit for get view: $viewId");
-			return $cache->get($viewId);
-		}
-		$self->app->log->debug("Cache miss for get view: $viewId");
-		my $viewID_OID = ( $viewId =~ /^[0-9a-fA-F]{24}$/ ) ? Mango::BSON::ObjectID->new($viewId) : { '_id' => $viewId };
-		$self->app->log->debug("Get view from mongo: $viewId = $viewID_OID => ".ref($viewID_OID));
-		my $viewDoc = $viewCollection->find_one($viewID_OID);
-		#$self->app->log->debug("na find_one");
-		my %viewReturn;
-		$viewReturn{'columns'}=();
-		$viewReturn{'_id'}=$viewDoc->{'_id'};
-		$viewReturn{'view'}=$viewDoc->{'_id'};
-		$viewReturn{'dom'}=$viewDoc->{'dom'};
-		$viewReturn{'restrict'}=$viewDoc->{'restrict'};
-		my $collection = $viewDoc->{'collection'};
-		$viewReturn{'collection'}=$collection;
-		$viewReturn{'fields'}=();
-		$viewReturn{'mongoid'}=();
-		use Data::Dumper;
-		#$self->app->log->debug("voor collection_names ".Dumper($self->mongoDB->db->collection_names));
-		#my $existsUnique = grep { /${collection}_unique'/ } @{$self->mongoDB->db->collection_names};
-		my $existsUnique=1;
-		for my $column (@{$viewDoc->{'columns'}}) {
-			#$self->app->log->debug("viewDoc is: ".Dumper($column	));
-			#create dot notation from queryname
-			if(defined $column->{'queryname'}){
-				$column->{'dotnotation'} = join('.',@{$column->{'queryname'}});
-			}
-			#hash: key dotnotation to valus: queryname (query array)
-			#->unused in frontend
-			$viewReturn{'queryarray'}{$column->{'dotnotation'}}=$column->{'queryname'} if defined $column->{'dotnotation'};
-			#create array of dotnotation names of all cols
-			#->unused in frontend
-			push @{$viewReturn{'fields'}}, $column->{'dotnotation'} if defined $column->{'dotnotation'};
-			#add extra info from _unique collection
-			if($existsUnique  > 0 && defined $column->{'dotnotation'}){
-				my $uniqueDoc = $self->mongoDB->db->collection($collection.'_unique_tmp')->find_one({'_id' => $column->{'dotnotation'} });
-				if(defined $uniqueDoc){
-					$column->{'searchtype'}=$uniqueDoc->{'type'};
-					if(defined $uniqueDoc->{'values'} && scalar(@{$uniqueDoc->{'values'}}) > 1 ){
-						$column->{'list'}=$uniqueDoc->{'values'};
-					}
-					if($uniqueDoc->{'type'} eq 'mongo_id'){
-						push @{$viewReturn{'mongoid'}}, $uniqueDoc->{'querykeys'};
-					}
-					
+		#hash: key dotnotation to valus: queryname (query array)
+		#->unused in frontend
+		$viewReturn{'queryarray'}{$column->{'dotnotation'}}=$column->{'queryname'} if defined $column->{'dotnotation'};
+		#create array of dotnotation names of all cols
+		#->unused in frontend
+		push @{$viewReturn{'fields'}}, $column->{'dotnotation'} if defined $column->{'dotnotation'};
+		#add extra info from _unique collection
+		if($existsUnique  > 0 && defined $column->{'dotnotation'}){
+			my $uniqueDoc = $self->mongoDB->db->collection($collection.'_unique_tmp')->find_one({'_id' => $column->{'dotnotation'} });
+			if(defined $uniqueDoc){
+				$column->{'searchtype'}=$uniqueDoc->{'type'};
+				if(defined $uniqueDoc->{'values'} && scalar(@{$uniqueDoc->{'values'}}) > 1 ){
+					$column->{'list'}=$uniqueDoc->{'values'};
 				}
+				if($uniqueDoc->{'type'} eq 'mongo_id'){
+					push @{$viewReturn{'mongoid'}}, $uniqueDoc->{'querykeys'};
+				}
+				
 			}
-			push @{$viewReturn{'columns'}}, $column;
 		}
-		if(!defined $viewReturn{'mongoid'} ){
-			$viewReturn{'mongoid'}=$viewDoc->{'mongoid'}
-		}
-		$cache->set($viewId, \%viewReturn);
-		if( defined $cache->get($viewId) ){
-			$self->app->log->debug("Cache saved for get view: $viewId ");
-		}
-		return \%viewReturn;
+		push @{$viewReturn{'columns'}}, $column;
+	}
+	if(!defined $viewReturn{'mongoid'} ){
+		$viewReturn{'mongoid'}=$viewDoc->{'mongoid'}
+	}
+	$cache->set($viewId, \%viewReturn);
+	if( defined $cache->get($viewId) ){
+		$self->app->log->debug("Cache saved for get view: $viewId ");
+	}
+	return \%viewReturn;
 }
 
 sub edit {

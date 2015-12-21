@@ -6,11 +6,16 @@ use strict;
 sub get {
 	my $self = shift;
 	my $viewId = $self->stash('viewid');
-	$self->app->log->debug("Controller: get view ".$viewId);
-	my $viewModel = $self->model('view');
-	my $viewReturn = $viewModel->get({'_id' => $viewId});
-	$self->render( json => $viewReturn );
+	if($viewId eq "variants" || $viewId eq "samples" || $viewId eq "projects"){
+		$self->render(template => "view/".$viewId, format => 'json');
+	} else {
+		$self->app->log->debug("Controller: get view ".$viewId);
+		my $viewModel = $self->model('view');
+		my $viewReturn = $viewModel->get({'_id' => $viewId});
+		$self->render( json => $viewReturn );		
+	}
 }
+
 sub create {
 	my $self = shift;
 	#my $viewId = $self->stash('viewid');
@@ -46,6 +51,7 @@ sub edit {
 	my $viewId = $self->stash('viewid');
 	$self->app->log->debug("Controller: edit view");
 	my $parsedJSON=$self->req->json;
+	$self->app->log->debug($parsedJSON);
 	unless(defined $parsedJSON->{'columns'} &&  defined $parsedJSON->{'collection'} && defined $parsedJSON->{'projects'} && defined $parsedJSON->{'restrict'} && defined $parsedJSON->{'dom'} && defined $parsedJSON->{'name'} ){
 		$self->app->log->debug("Controller: edit view failed, missing values");
 		$self->render( json => { 'failureNoticeHtml' => '<p>Needed values were not defined. Please try again.</p>'} );
@@ -82,7 +88,7 @@ sub editname {
 		return;
 	}
 	my $viewModel = $self->model('view');
-	my $viewId = $viewModel->editKey($self->stash('viewid'),'name',$parsedJSON->{'name'});
+	$viewId = $viewModel->editKey($self->stash('viewid'),'name',$parsedJSON->{'name'});
 	$self->app->log->debug("Controller: edit name in view = ".$viewId);
 	my $viewReturn = $viewModel->get({'_id' => $viewId});
 	$self->render( json => $viewReturn );

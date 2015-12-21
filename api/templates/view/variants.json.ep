@@ -1,0 +1,2816 @@
+{
+  "collection": "variants",
+  "view": "variants",
+  "name": "variants",
+  "dom": "iCr<'H'>t",
+  "elementmatch": [
+    [
+      "sa"
+    ]
+  ],
+  "mongoid": [
+    [
+      "_id"
+    ],
+    [
+      "sa",
+      "id"
+    ],
+    [
+      "sa.id"
+    ]
+  ],
+  "restrict": [
+    {
+      "find": [
+        "sa"
+      ],
+      "restrict": [
+        "id"
+      ]
+    }
+  ],
+  "columns": [
+    {
+      "sName": "Detail",
+      "bSearchable": false,
+      "bSortable": false,
+      "row_detail": false,
+      "showable": false,
+      "template": "<img class=\"row_detail\" src=\"img\/details_open.png\" variantid=\"<%%= $id %>\" \/>",
+      "stash": {
+        "id": {
+          "ref_column": "_id"
+        }
+      }
+    },
+    {
+      "sName": "Variant ID",
+      "bVisible": false,
+      "showable": false,
+      "queryname": [
+        "_id"
+      ],
+      "querytype": "mongo_id",
+      "row_detail": {
+        "type": "id"
+      }
+    },
+    {
+      "sName": "Genome build",
+      "bVisible": false,
+      "queryname": [
+        "b"
+      ],
+      "row_detail": {
+        "type": "link",
+        "url": "http:\/\/www.ncbi.nlm.nih.gov\/projects\/genome\/assembly\/grc\/human\/index.shtml"
+      }
+    },
+    {
+      "sName": "Chromosome",
+      "sorting": true,
+      "queryname": [
+        "c"
+      ],
+      "row_detail": {
+        "type": "region",
+        "reg_chr": true
+      }
+    },
+    {
+      "sName": "Karyotype band",
+      "queryname": [
+        "karyo"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Start",
+      "description": "Chromosome start position",
+      "range": "start",
+      "queryname": [
+        "s"
+      ],
+      "row_detail": {
+        "type": "region",
+        "reg_start": true
+      }
+    },
+    {
+      "sName": "Stop",
+      "description": "Chromosome stop position",
+      "range": "stop",
+      "queryname": [
+        "e"
+      ],
+      "bVisible": false,
+      "row_detail": {
+        "type": "region",
+        "reg_stop": true
+      }
+    },
+    {
+      "sName": "Variant",
+      "queryname": [
+        "v"
+      ]
+    },
+    {
+      "sName": "View IGV",
+      "bSearchable": false,
+      "bSortable": false,
+      "row_detail": false,
+      "template": "<img class=\"igv table_icon\" src=\"img\/IGV_32.png\" chromosome=\"<%%= $chrom %>\" start=\"<%%= $start %>\" end=\"<%%= $end %>\" \/>",
+      "stash": {
+        "chrom": {
+          "ref_column": "c"
+        },
+        "start": {
+          "ref_column": "s"
+        },
+        "end": {
+          "ref_column": "e"
+        }
+      }
+    },
+    {
+      "sName": "View Ensembl",
+      "bSearchable": false,
+      "bSortable": false,
+      "row_detail": false,
+      "template": "<img class=\"ensembl table_icon\" src=\"img\/Ensembl.jpg\" chromosome=\"<%%= $chrom %>\" start=\"<%%= $start %>\" end=\"<%%= $end %>\" \/>",
+      "stash": {
+        "chrom": {
+          "ref_column": "c"
+        },
+        "start": {
+          "ref_column": "s"
+        },
+        "end": {
+          "ref_column": "e"
+        }
+      }
+    },
+    {
+      "sName": "Variant type",
+      "queryname": [
+        "t"
+      ]
+    },
+    {
+      "sName": "Name",
+      "description": "The name of this variants as it is known to the Ensembl database, mostly, but not limited to the dbSNP rs number",
+      "queryname": [
+        "name"
+      ]
+    },
+    {
+      "sName": "Alternate allele",
+      "description": "alternative allele known to ensemble",
+      "queryname": [
+        "alt",
+        "all"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Alternate population",
+      "description": "population allele was observed in",
+      "queryname": [
+        "alt",
+        "pop"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Alternate frequency",
+      "description": "frequency of occurrence in this population",
+      "queryname": [
+        "alt",
+        "freq"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Repeat name",
+      "description": "Overlapping genomic repeat",
+      "queryname": [
+        "repeat",
+        "id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Repeat start",
+      "description": "Genomic repeat start position",
+      "queryname": [
+        "repeat",
+        "start"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Repeat end",
+      "description": "Genomic repeat end position",
+      "queryname": [
+        "repeat",
+        "end"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Observed conservation",
+      "description": "Observed GERP conservation score for this position",
+      "queryname": [
+        "conservation",
+        "ob"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Expected conservation",
+      "description": "Expected GERP conservation score for this position",
+      "queryname": [
+        "conservation",
+        "ex"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Conservation difference",
+      "description": "Difference in between Observed and expected GERP conservation score for this position",
+      "queryname": [
+        "conservation",
+        "diff"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Regolatory feture",
+      "description": "Overlapping genomic regulatory element",
+      "queryname": [
+        "regulation",
+        "display_label"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Regulatory element start",
+      "description": "Genomic regulatory element start position",
+      "queryname": [
+        "regulation",
+        "start"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Regulatory element end",
+      "description": "Genomic regulatory element end position",
+      "queryname": [
+        "regulation",
+        "end"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Regulatory element name",
+      "description": "Genomic regulatory element name",
+      "queryname": [
+        "regulation",
+        "name"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Regulatory element sequence",
+      "description": "Genomic regulatory element sequence",
+      "queryname": [
+        "regulation",
+        "seq"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Regulatory element score",
+      "description": "Genomic regulatory element score",
+      "queryname": [
+        "regulation",
+        "score"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Transcript strand",
+      "description": "strand of transcript",
+      "queryname": [
+        "tr",
+        "str"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Consequence",
+      "description": "The consequence of this variant on the transcript",
+      "queryname": [
+        "tr",
+        "con"
+      ]
+    },
+    {
+      "sName": "Transcript",
+      "description": "ensembl transcript",
+      "queryname": [
+        "tr",
+        "tr"
+      ]
+    },
+    {
+      "sName": "Gene",
+      "description": "The common gene name",
+      "queryname": [
+        "tr",
+        "gene"
+      ]
+    },
+    {
+      "sName": "Gene id",
+      "description": "ensembl stable gene id",
+      "queryname": [
+        "tr",
+        "geneid"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Sift prediction",
+      "description": "sift prediction",
+      "queryname": [
+        "tr",
+        "sift"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Sift score",
+      "description": "sift score",
+      "queryname": [
+        "tr",
+        "sifts"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Polyphen prediction",
+      "description": "polyphen",
+      "queryname": [
+        "tr",
+        "pphe"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Polyphen score",
+      "description": "polyphen score",
+      "queryname": [
+        "tr",
+        "pphes"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Condel prediction",
+      "description": "condel",
+      "queryname": [
+        "tr",
+        "cond"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Condel score",
+      "description": "condel score",
+      "queryname": [
+        "tr",
+        "conds"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "cDNA position",
+      "description": "cdna position",
+      "queryname": [
+        "tr",
+        "cdnapos"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "coding position",
+      "description": "coding position",
+      "queryname": [
+        "tr",
+        "cdpos"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "cDNA change",
+      "description": "cdna string",
+      "queryname": [
+        "tr",
+        "cdnas"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Codon change",
+      "description": "codon change",
+      "queryname": [
+        "tr",
+        "cods"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Protein position",
+      "description": "protein position",
+      "queryname": [
+        "tr",
+        "ppos"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Peptide change",
+      "description": "peptide string",
+      "queryname": [
+        "tr",
+        "peps"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Sample ID",
+      "bVisible": false,
+      "row_detail": false,
+      "showable": false,
+      "split": true,
+      "querytype": "mongo_id",
+      "elemmatch": "sa",
+      "queryname": [
+        "sa",
+        "id"
+      ]
+    },
+    {
+      "sName": "Sample Name",
+      "bVisible": true,
+      "row_detail": true,
+      "showable": true,
+      "elemmatch": "sa",
+      "queryname": [
+        "sa",
+        "sn"
+      ]
+    },
+    {
+      "sName": "Read depth",
+      "description": "Raw read depth (all bases)",
+      "queryname": [
+        "sa",
+        "info",
+        "DP"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Forward reference coverage",
+      "description": "Number of high-quality reference bases mapping on the forward strand",
+      "queryname": [
+        "sa",
+        "info",
+        "DP4",
+        "frc"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Reverse reference coverage",
+      "description": "Number of high-quality reference bases mapping on the reverse strand",
+      "queryname": [
+        "sa",
+        "info",
+        "DP4",
+        "rrc"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Forward alternate coverage",
+      "description": "Number of high-quality alternate bases mapping on the forward strand",
+      "queryname": [
+        "sa",
+        "info",
+        "DP4",
+        "vfc"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Reverse alternate coverage",
+      "description": "Number of high-quality alternate bases mapping on the reverse strand",
+      "queryname": [
+        "sa",
+        "info",
+        "DP4",
+        "vrc"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "rms mapping quality",
+      "description": "Root-mean-square mapping quality of reads covering this position",
+      "queryname": [
+        "sa",
+        "info",
+        "MQ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Same likelihood",
+      "description": "Phred scaled probability score of all samples used in genotyping having the same genotype at this position",
+      "queryname": [
+        "sa",
+        "info",
+        "FQ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Allele likelihood",
+      "description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+      "queryname": [
+        "sa",
+        "info",
+        "AF1"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Allele count likelihood",
+      "description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+      "queryname": [
+        "sa",
+        "info",
+        "AC1"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Genotype frequency likelihood",
+      "description": "ML estimate of genotype frequencies",
+      "queryname": [
+        "sa",
+        "info",
+        "G3"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "chi squared genotype frequency p-val",
+      "description": "Chi^2 based HWE test P-value based on G3",
+      "queryname": [
+        "sa",
+        "info",
+        "HWE"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "likelihood ratio",
+      "description": "Log ratio of genotype likelihoods with and without the constraint",
+      "queryname": [
+        "sa",
+        "info",
+        "CLR"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.CLCAD2",
+      "description": "CLC bio Allelic depth",
+      "queryname": [
+        "sa",
+        "CLCAD2"
+      ],
+      "template": {
+        "name": "object"
+      },
+      "bVisible": false
+    },
+    {
+      "sName": "Unconstrained genotype configuration",
+      "description": "The most probable unconstrained genotype configuration in the trio",
+      "queryname": [
+        "sa",
+        "info",
+        "UGT"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Constrained genotype configuration",
+      "description": "The most probable constrained genotype configuration in the trio",
+      "queryname": [
+        "sa",
+        "info",
+        "CGT"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Strand bias p-val",
+      "description": "P-value for strand bias: this is the outcome of the Fishers exact (2 tailed) test calculated using the coverage of the reference and variant on the forward and reverse strand (higher is better)",
+      "queryname": [
+        "sa",
+        "info",
+        "PV4",
+        "sb"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Base quality p-val",
+      "description": "P-value for base quality bias: Students t-test calculated using the quality scores of the bases for the reference allele versus the alternate allele bases",
+      "queryname": [
+        "sa",
+        "info",
+        "PV4",
+        "bqb"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Mapping quality p-val",
+      "description": "P-value for mapping quality bias: Students t-test calculated using the mapping quality scores of the reference allele versus the alternate allele reads",
+      "queryname": [
+        "sa",
+        "info",
+        "PV4",
+        "mqb"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Tail distance p-val",
+      "description": "P-value for tail distance bias: Students t-test comparing the tail distance (the distance to the end of a read) for the reference versus the alternate allele bases",
+      "queryname": [
+        "sa",
+        "info",
+        "PV4",
+        "tdb"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Indel",
+      "description": "Indicates that the variant is an INDEL",
+      "queryname": [
+        "sa",
+        "info",
+        "INDEL"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Group one enrichment probability",
+      "description": "Phred probability of the nonRef allele frequency in group1 samples being larger than in group2",
+      "queryname": [
+        "sa",
+        "info",
+        "PC2",
+        "g1p"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Group two probability",
+      "description": "Phred probability of the nonRef allele frequency in group1 samples being smaller than in group2",
+      "queryname": [
+        "sa",
+        "info",
+        "PC2",
+        "g2p"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Chi squared group 1 vs 2 p-val",
+      "description": "Posterior weighted chi^2 P-value for testing the association between group1 and group2 samples",
+      "queryname": [
+        "sa",
+        "info",
+        "PCHI2"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Phred scaled PCHI2",
+      "description": "Phred scaled PCHI2",
+      "queryname": [
+        "sa",
+        "info",
+        "QCHI2"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "# of permutations",
+      "description": "Number of permutations yielding a smaller PCHI2",
+      "queryname": [
+        "sa",
+        "info",
+        "PR"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Variant distance bias",
+      "description": "Variant Distance Bias",
+      "queryname": [
+        "sa",
+        "info",
+        "VDB"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Somatic p-value",
+      "description": "P-val of Chi squared test of reference vs non reference bases in the control vs somatic sample, Multiple testing corrected according to Benjamini & Hochberg",
+      "queryname": [
+        "sa",
+        "comp",
+        "pc"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Somatic p-value uncorrected",
+      "description": "P-val of Chi squared test of reference vs non reference bases in the control vs somatic sample",
+      "queryname": [
+        "sa",
+        "comp",
+        "p"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Somatic reference count",
+      "description": "Number of reference bases counted in the variant sample",
+      "queryname": [
+        "sa",
+        "comp",
+        "crc"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Somatic variant count",
+      "description": "Number of variant bases counted in the variant sample",
+      "queryname": [
+        "sa",
+        "comp",
+        "cvc"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Control reference count",
+      "description": "Number of reference bases counted in the control sample",
+      "queryname": [
+        "sa",
+        "comp",
+        "rrc"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Control variant count",
+      "description": "Number of variant bases counted in the control sample",
+      "queryname": [
+        "sa",
+        "comp",
+        "rvc"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Somatic variant ratio",
+      "description": "The ratio of the number of variant bases vs the coverage in the variant sample",
+      "queryname": [
+        "sa",
+        "comp",
+        "cra"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Control variant ratio",
+      "description": "The ratio of the number of variant bases vs the coverage in the control sample",
+      "queryname": [
+        "sa",
+        "comp",
+        "rra"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Somatic ratio difference",
+      "description": "How much more the variant is occurring in the somatic vs the control sample",
+      "queryname": [
+        "sa",
+        "comp",
+        "dra"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Compared to sample",
+      "description": "Name of the control sample used for p-value calculation",
+      "queryname": [
+        "sa",
+        "comp",
+        "refn"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Genotype",
+      "description": "Genotype",
+      "queryname": [
+        "sa",
+        "GT"
+      ]
+    },
+    {
+      "sName": "Genotype quality",
+      "description": "Genotype Quality",
+      "queryname": [
+        "sa",
+        "GQ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Allelic depth ref",
+      "description": "Allelic depths for the ref and alt alleles in the order listed",
+      "queryname": [
+        "sa",
+        "AD",
+        "ref"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Allelic depth alt",
+      "description": "Allelic depths for the ref and alt alleles in the order listed",
+      "queryname": [
+        "sa",
+        "AD",
+        "alt"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "RR likelihood",
+      "description": "Likelihoods for RR (R=ref,A=alt)",
+      "queryname": [
+        "sa",
+        "GL",
+        "RR"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "RA likelihood",
+      "description": "Likelihoods for RA (R=ref,A=alt)",
+      "queryname": [
+        "sa",
+        "GL",
+        "RA"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "AA likelihood",
+      "description": "Likelihoods for AA (R=ref,A=alt)",
+      "queryname": [
+        "sa",
+        "GL",
+        "AA"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Coverage",
+      "description": "Number of high-quality bases",
+      "queryname": [
+        "sa",
+        "DP"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Strand bias p-val",
+      "description": "Phred-scaled strand bias P-value",
+      "queryname": [
+        "sa",
+        "SP"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "Genotype likelihoods",
+      "description": "List of Phred-scaled genotype likelihoods",
+      "queryname": [
+        "sa",
+        "PL"
+      ],
+      "bVisible": false,
+      "template": {
+        "name": "object"
+      }
+    },
+    {
+      "sName": "gene.xrefs.MGI.description",
+      "description": "gene.xrefs.MGI.description",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "MGI",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.allxrefs.display_id",
+      "description": "gene.allxrefs.display_id",
+      "queryname": [
+        "gene",
+        "allxrefs",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "str",
+      "description": "str",
+      "queryname": [
+        "str"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.QD",
+      "description": "sa.info.QD",
+      "queryname": [
+        "sa",
+        "info",
+        "QD"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.HRun",
+      "description": "sa.info.HRun",
+      "queryname": [
+        "sa",
+        "info",
+        "HRun"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.MGI_transcript_name.description",
+      "description": "tr.xrefs.MGI_transcript_name.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "MGI_transcript_name",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.BaseQRankSum",
+      "description": "sa.info.BaseQRankSum",
+      "queryname": [
+        "sa",
+        "info",
+        "BaseQRankSum"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "syn.source",
+      "description": "syn.source",
+      "queryname": [
+        "syn",
+        "source"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.Vega_translation.display_id",
+      "description": "tr.xrefs.Vega_translation.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "Vega_translation",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "st",
+      "description": "st",
+      "queryname": [
+        "st"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.AD.alt3",
+      "description": "sa.AD.alt3",
+      "queryname": [
+        "sa",
+        "AD",
+        "alt3"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.BTBR T+ tf\/J",
+      "description": "popfreq.BTBR T+ tf\/J",
+      "queryname": [
+        "popfreq",
+        "BTBR T+ tf\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.FS",
+      "description": "sa.info.FS",
+      "queryname": [
+        "sa",
+        "info",
+        "FS"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.culprit",
+      "description": "sa.info.culprit",
+      "queryname": [
+        "sa",
+        "info",
+        "culprit"
+      ],
+      "bVisible": false,
+      "values": [
+        "MQ",
+        "HaplotypeScore",
+        "FS",
+        "QD",
+        "MQRankSum",
+        "ReadPosRankSum",
+        "ClippingRankSum"
+      ]
+    },
+    {
+      "sName": "va",
+      "description": "va",
+      "queryname": [
+        "va"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.PWD\/PhJ",
+      "description": "popfreq.PWD\/PhJ",
+      "queryname": [
+        "popfreq",
+        "PWD\/PhJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.129X1\/SvJ",
+      "description": "popfreq.129X1\/SvJ",
+      "queryname": [
+        "popfreq",
+        "129X1\/SvJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.ClippingRankSum",
+      "description": "sa.info.ClippingRankSum",
+      "queryname": [
+        "sa",
+        "info",
+        "ClippingRankSum"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.MOLF\/EiJ",
+      "description": "popfreq.MOLF\/EiJ",
+      "queryname": [
+        "popfreq",
+        "MOLF\/EiJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.MGI.description",
+      "description": "tr.xrefs.MGI.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "MGI",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.gene",
+      "description": "gene.gene",
+      "queryname": [
+        "gene",
+        "gene"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.extType",
+      "description": "sa.info.extType",
+      "queryname": [
+        "sa",
+        "info",
+        "extType"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "a",
+      "description": "a",
+      "queryname": [
+        "a"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.FVB\/NJ",
+      "description": "popfreq.FVB\/NJ",
+      "queryname": [
+        "popfreq",
+        "FVB\/NJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.CZECHII\/EiJ",
+      "description": "popfreq.CZECHII\/EiJ",
+      "queryname": [
+        "popfreq",
+        "CZECHII\/EiJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.NON\/LtJ",
+      "description": "popfreq.NON\/LtJ",
+      "queryname": [
+        "popfreq",
+        "NON\/LtJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.LP\/J",
+      "description": "popfreq.LP\/J",
+      "queryname": [
+        "popfreq",
+        "LP\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.EntrezGene.display_id",
+      "description": "gene.xrefs.EntrezGene.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "EntrezGene",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_peptide_predicted.display_id",
+      "description": "tr.xrefs.RefSeq_peptide_predicted.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_peptide_predicted",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.CZECHII\/Ei",
+      "description": "popfreq.CZECHII\/Ei",
+      "queryname": [
+        "popfreq",
+        "CZECHII\/Ei"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.PERLEGEN:MM_PANEL2",
+      "description": "popfreq.PERLEGEN:MM_PANEL2",
+      "queryname": [
+        "popfreq",
+        "PERLEGEN:MM_PANEL2"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.miRBase.description",
+      "description": "gene.xrefs.miRBase.description",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "miRBase",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.allxrefs.display_id",
+      "description": "tr.allxrefs.display_id",
+      "queryname": [
+        "tr",
+        "allxrefs",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.MLEAF",
+      "description": "sa.info.MLEAF",
+      "queryname": [
+        "sa",
+        "info",
+        "MLEAF"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.ActiveRegionSize",
+      "description": "sa.info.ActiveRegionSize",
+      "queryname": [
+        "sa",
+        "info",
+        "ActiveRegionSize"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.protein_id.display_id",
+      "description": "tr.xrefs.protein_id.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "protein_id",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.cdspos",
+      "description": "tr.cdspos",
+      "queryname": [
+        "tr",
+        "cdspos"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.GO.display_id",
+      "description": "tr.xrefs.GO.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "GO",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.MQ0",
+      "description": "sa.info.MQ0",
+      "queryname": [
+        "sa",
+        "info",
+        "MQ0"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.IPI.description",
+      "description": "tr.xrefs.IPI.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "IPI",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.allxrefs.description",
+      "description": "gene.allxrefs.description",
+      "queryname": [
+        "gene",
+        "allxrefs",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.NVH",
+      "description": "sa.info.NVH",
+      "queryname": [
+        "sa",
+        "info",
+        "NVH"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.IPI.display_id",
+      "description": "tr.xrefs.IPI.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "IPI",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.QDE",
+      "description": "sa.info.QDE",
+      "queryname": [
+        "sa",
+        "info",
+        "QDE"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.AN",
+      "description": "sa.info.AN",
+      "queryname": [
+        "sa",
+        "info",
+        "AN"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.NumHapAssembly",
+      "description": "sa.info.NumHapAssembly",
+      "queryname": [
+        "sa",
+        "info",
+        "NumHapAssembly"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.C3H\/HeJ",
+      "description": "popfreq.C3H\/HeJ",
+      "queryname": [
+        "popfreq",
+        "C3H\/HeJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.TYPE",
+      "description": "sa.info.TYPE",
+      "queryname": [
+        "sa",
+        "info",
+        "TYPE"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.allxrefs.description",
+      "description": "tr.allxrefs.description",
+      "queryname": [
+        "tr",
+        "allxrefs",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.MLEAC",
+      "description": "sa.info.MLEAC",
+      "queryname": [
+        "sa",
+        "info",
+        "MLEAC"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.MGI.display_id",
+      "description": "tr.xrefs.MGI.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "MGI",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.AKR\/J",
+      "description": "popfreq.AKR\/J",
+      "queryname": [
+        "popfreq",
+        "AKR\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.Dels",
+      "description": "sa.info.Dels",
+      "queryname": [
+        "sa",
+        "info",
+        "Dels"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.comp.refid",
+      "description": "sa.comp.refid",
+      "queryname": [
+        "sa",
+        "comp",
+        "refid"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.OTTT.display_id",
+      "description": "tr.xrefs.OTTT.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "OTTT",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.Uniprot\/SPTREMBL.display_id",
+      "description": "tr.xrefs.Uniprot\/SPTREMBL.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "Uniprot\/SPTREMBL",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.SB",
+      "description": "sa.info.SB",
+      "queryname": [
+        "sa",
+        "info",
+        "SB"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "vr",
+      "description": "vr",
+      "queryname": [
+        "vr"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.DBA\/2J",
+      "description": "popfreq.DBA\/2J",
+      "queryname": [
+        "popfreq",
+        "DBA\/2J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.MGI_transcript_name.display_id",
+      "description": "tr.xrefs.MGI_transcript_name.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "MGI_transcript_name",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.KK\/HlJ",
+      "description": "popfreq.KK\/HlJ",
+      "queryname": [
+        "popfreq",
+        "KK\/HlJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.GO.description",
+      "description": "tr.xrefs.GO.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "GO",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.EMBL.display_id",
+      "description": "tr.xrefs.EMBL.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "EMBL",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.CAST\/EiJ",
+      "description": "popfreq.CAST\/EiJ",
+      "queryname": [
+        "popfreq",
+        "CAST\/EiJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.NZW\/LacJ",
+      "description": "popfreq.NZW\/LacJ",
+      "queryname": [
+        "popfreq",
+        "NZW\/LacJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.allelequal",
+      "description": "sa.allelequal",
+      "queryname": [
+        "sa",
+        "allelequal"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.129S1\/SvImJ",
+      "description": "popfreq.129S1\/SvImJ",
+      "queryname": [
+        "popfreq",
+        "129S1\/SvImJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.Vega_transcript.display_id",
+      "description": "tr.xrefs.Vega_transcript.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "Vega_transcript",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.canonical",
+      "description": "tr.canonical",
+      "queryname": [
+        "tr",
+        "canonical"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.NOD\/LTJ",
+      "description": "popfreq.NOD\/LTJ",
+      "queryname": [
+        "popfreq",
+        "NOD\/LTJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.DS",
+      "description": "sa.info.DS",
+      "queryname": [
+        "sa",
+        "info",
+        "DS"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.AC",
+      "description": "sa.info.AC",
+      "queryname": [
+        "sa",
+        "info",
+        "AC"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.InbreedingCoeff",
+      "description": "sa.info.InbreedingCoeff",
+      "queryname": [
+        "sa",
+        "info",
+        "InbreedingCoeff"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.NumHapEval",
+      "description": "sa.info.NumHapEval",
+      "queryname": [
+        "sa",
+        "info",
+        "NumHapEval"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.A\/J",
+      "description": "popfreq.A\/J",
+      "queryname": [
+        "popfreq",
+        "A\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.WSB\/EiJ",
+      "description": "popfreq.WSB\/EiJ",
+      "queryname": [
+        "popfreq",
+        "WSB\/EiJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.ReadPosRankSum",
+      "description": "sa.info.ReadPosRankSum",
+      "queryname": [
+        "sa",
+        "info",
+        "ReadPosRankSum"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "syn.synonyms",
+      "description": "syn.synonyms",
+      "queryname": [
+        "syn",
+        "synonyms"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.UniGene.display_id",
+      "description": "gene.xrefs.UniGene.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "UniGene",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.OTTG.display_id",
+      "description": "gene.xrefs.OTTG.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "OTTG",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.phased",
+      "description": "sa.phased",
+      "queryname": [
+        "sa",
+        "phased"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "r",
+      "description": "r",
+      "queryname": [
+        "r"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.MGI.display_id",
+      "description": "gene.xrefs.MGI.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "MGI",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.VQSLOD",
+      "description": "sa.info.VQSLOD",
+      "queryname": [
+        "sa",
+        "info",
+        "VQSLOD"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.HaplotypeScore",
+      "description": "sa.info.HaplotypeScore",
+      "queryname": [
+        "sa",
+        "info",
+        "HaplotypeScore"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.geneid",
+      "description": "gene.geneid",
+      "queryname": [
+        "gene",
+        "geneid"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.MQRankSum",
+      "description": "sa.info.MQRankSum",
+      "queryname": [
+        "sa",
+        "info",
+        "MQRankSum"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.PL\/J",
+      "description": "popfreq.PL\/J",
+      "queryname": [
+        "popfreq",
+        "PL\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.IKMCs_No_products_available_yet.display_id",
+      "description": "gene.xrefs.IKMCs_No_products_available_yet.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "IKMCs_No_products_available_yet",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.I\/LnJ",
+      "description": "popfreq.I\/LnJ",
+      "queryname": [
+        "popfreq",
+        "I\/LnJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.SWR\/J",
+      "description": "popfreq.SWR\/J",
+      "queryname": [
+        "popfreq",
+        "SWR\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.C57BL\/10J",
+      "description": "popfreq.C57BL\/10J",
+      "queryname": [
+        "popfreq",
+        "C57BL\/10J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.RIIIS\/J",
+      "description": "popfreq.RIIIS\/J",
+      "queryname": [
+        "popfreq",
+        "RIIIS\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.Fantom.display_id",
+      "description": "tr.xrefs.Fantom.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "Fantom",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.ST\/bJ",
+      "description": "popfreq.ST\/bJ",
+      "queryname": [
+        "popfreq",
+        "ST\/bJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_peptide_predicted.description",
+      "description": "tr.xrefs.RefSeq_peptide_predicted.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_peptide_predicted",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.PWD\/Ph",
+      "description": "popfreq.PWD\/Ph",
+      "queryname": [
+        "popfreq",
+        "PWD\/Ph"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.shares_CDS_and_UTR_with_OTTT.display_id",
+      "description": "tr.xrefs.shares_CDS_and_UTR_with_OTTT.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "shares_CDS_and_UTR_with_OTTT",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.ROCHEBIO:RPAMM",
+      "description": "popfreq.ROCHEBIO:RPAMM",
+      "queryname": [
+        "popfreq",
+        "ROCHEBIO:RPAMM"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.C57BR\/cdJ",
+      "description": "popfreq.C57BR\/cdJ",
+      "queryname": [
+        "popfreq",
+        "C57BR\/cdJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_ncRNA.display_id",
+      "description": "tr.xrefs.RefSeq_ncRNA.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_ncRNA",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.allxrefs.database",
+      "description": "tr.allxrefs.database",
+      "queryname": [
+        "tr",
+        "allxrefs",
+        "database"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.C3HEB\/FEJ",
+      "description": "popfreq.C3HEB\/FEJ",
+      "queryname": [
+        "popfreq",
+        "C3HEB\/FEJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.129\/Sv",
+      "description": "popfreq.129\/Sv",
+      "queryname": [
+        "popfreq",
+        "129\/Sv"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.allxrefs.database",
+      "description": "gene.allxrefs.database",
+      "queryname": [
+        "gene",
+        "allxrefs",
+        "database"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.ZALENDE\/EiJ",
+      "description": "popfreq.ZALENDE\/EiJ",
+      "queryname": [
+        "popfreq",
+        "ZALENDE\/EiJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.SEA\/GnJ",
+      "description": "popfreq.SEA\/GnJ",
+      "queryname": [
+        "popfreq",
+        "SEA\/GnJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.MRL\/MpJ",
+      "description": "popfreq.MRL\/MpJ",
+      "queryname": [
+        "popfreq",
+        "MRL\/MpJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.domain.accession",
+      "description": "tr.domain.accession",
+      "queryname": [
+        "tr",
+        "domain",
+        "accession"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.NZW\/Lac",
+      "description": "popfreq.NZW\/Lac",
+      "queryname": [
+        "popfreq",
+        "NZW\/Lac"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.DBA\/1J",
+      "description": "popfreq.DBA\/1J",
+      "queryname": [
+        "popfreq",
+        "DBA\/1J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.MEROPS.display_id",
+      "description": "tr.xrefs.MEROPS.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "MEROPS",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.IKMCs_Mice_available.display_id",
+      "description": "gene.xrefs.IKMCs_Mice_available.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "IKMCs_Mice_available",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.LGJ",
+      "description": "popfreq.LGJ",
+      "queryname": [
+        "popfreq",
+        "LGJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.PDB.display_id",
+      "description": "tr.xrefs.PDB.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "PDB",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.SPRET\/Ei",
+      "description": "popfreq.SPRET\/Ei",
+      "queryname": [
+        "popfreq",
+        "SPRET\/Ei"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.C57L\/J",
+      "description": "popfreq.C57L\/J",
+      "queryname": [
+        "popfreq",
+        "C57L\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.SJL\/J",
+      "description": "popfreq.SJL\/J",
+      "queryname": [
+        "popfreq",
+        "SJL\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.A\/HeJ",
+      "description": "popfreq.A\/HeJ",
+      "queryname": [
+        "popfreq",
+        "A\/HeJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.CBA\/J",
+      "description": "popfreq.CBA\/J",
+      "queryname": [
+        "popfreq",
+        "CBA\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_mRNA_predicted.display_id",
+      "description": "tr.xrefs.RefSeq_mRNA_predicted.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_mRNA_predicted",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.C57BLKS\/J",
+      "description": "popfreq.C57BLKS\/J",
+      "queryname": [
+        "popfreq",
+        "C57BLKS\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.AF",
+      "description": "sa.info.AF",
+      "queryname": [
+        "sa",
+        "info",
+        "AF"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.SEG\/Pas",
+      "description": "popfreq.SEG\/Pas",
+      "queryname": [
+        "popfreq",
+        "SEG\/Pas"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.Clone_based_vega_gene.display_id",
+      "description": "gene.xrefs.Clone_based_vega_gene.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "Clone_based_vega_gene",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.domain.gend",
+      "description": "tr.domain.gend",
+      "queryname": [
+        "tr",
+        "domain",
+        "gend"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.SM\/J",
+      "description": "popfreq.SM\/J",
+      "queryname": [
+        "popfreq",
+        "SM\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.C57BL\/6J",
+      "description": "popfreq.C57BL\/6J",
+      "queryname": [
+        "popfreq",
+        "C57BL\/6J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.NZB\/BlNJ",
+      "description": "popfreq.NZB\/BlNJ",
+      "queryname": [
+        "popfreq",
+        "NZB\/BlNJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.MAI\/Pas",
+      "description": "popfreq.MAI\/Pas",
+      "queryname": [
+        "popfreq",
+        "MAI\/Pas"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.MA\/MyJ",
+      "description": "popfreq.MA\/MyJ",
+      "queryname": [
+        "popfreq",
+        "MA\/MyJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.WI:MOUSE",
+      "description": "popfreq.WI:MOUSE",
+      "queryname": [
+        "popfreq",
+        "WI:MOUSE"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.PERA\/EiJ",
+      "description": "popfreq.PERA\/EiJ",
+      "queryname": [
+        "popfreq",
+        "PERA\/EiJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.SMJ",
+      "description": "popfreq.SMJ",
+      "queryname": [
+        "popfreq",
+        "SMJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.Clone_based_ensembl_transcript.display_id",
+      "description": "tr.xrefs.Clone_based_ensembl_transcript.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "Clone_based_ensembl_transcript",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.IKMCs_ES_cells_available.display_id",
+      "description": "gene.xrefs.IKMCs_ES_cells_available.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "IKMCs_ES_cells_available",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.BALB\/cJ",
+      "description": "popfreq.BALB\/cJ",
+      "queryname": [
+        "popfreq",
+        "BALB\/cJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_mRNA_predicted.description",
+      "description": "tr.xrefs.RefSeq_mRNA_predicted.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_mRNA_predicted",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.MSM\/Ms",
+      "description": "popfreq.MSM\/Ms",
+      "queryname": [
+        "popfreq",
+        "MSM\/Ms"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.Clone_based_ensembl_gene.display_id",
+      "description": "gene.xrefs.Clone_based_ensembl_gene.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "Clone_based_ensembl_gene",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.TWGNF:TWGNF-Mouse-2",
+      "description": "popfreq.TWGNF:TWGNF-Mouse-2",
+      "queryname": [
+        "popfreq",
+        "TWGNF:TWGNF-Mouse-2"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_ncRNA_predicted.description",
+      "description": "tr.xrefs.RefSeq_ncRNA_predicted.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_ncRNA_predicted",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.JF1\/Ms",
+      "description": "popfreq.JF1\/Ms",
+      "queryname": [
+        "popfreq",
+        "JF1\/Ms"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.domain.gstart",
+      "description": "tr.domain.gstart",
+      "queryname": [
+        "tr",
+        "domain",
+        "gstart"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.C58\/J",
+      "description": "popfreq.C58\/J",
+      "queryname": [
+        "popfreq",
+        "C58\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.NOD\/DIL",
+      "description": "popfreq.NOD\/DIL",
+      "queryname": [
+        "popfreq",
+        "NOD\/DIL"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_ncRNA_predicted.display_id",
+      "description": "tr.xrefs.RefSeq_ncRNA_predicted.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_ncRNA_predicted",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.IKMCs_Vector_available.display_id",
+      "description": "gene.xrefs.IKMCs_Vector_available.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "IKMCs_Vector_available",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.shares_CDS_with_ENST.display_id",
+      "description": "tr.xrefs.shares_CDS_with_ENST.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "shares_CDS_with_ENST",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.con_so",
+      "description": "tr.con_so",
+      "queryname": [
+        "tr",
+        "con_so"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.CE\/J",
+      "description": "popfreq.CE\/J",
+      "queryname": [
+        "popfreq",
+        "CE\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.domain.start",
+      "description": "tr.domain.start",
+      "queryname": [
+        "tr",
+        "domain",
+        "start"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.LG\/J",
+      "description": "popfreq.LG\/J",
+      "queryname": [
+        "popfreq",
+        "LG\/J"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.RFAM.description",
+      "description": "gene.xrefs.RFAM.description",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "RFAM",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.BALB\/cByJ",
+      "description": "popfreq.BALB\/cByJ",
+      "queryname": [
+        "popfreq",
+        "BALB\/cByJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.BUB\/BnJ",
+      "description": "popfreq.BUB\/BnJ",
+      "queryname": [
+        "popfreq",
+        "BUB\/BnJ"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.TWGNF:TWGNF-Mouse",
+      "description": "popfreq.TWGNF:TWGNF-Mouse",
+      "queryname": [
+        "popfreq",
+        "TWGNF:TWGNF-Mouse"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.RFAM.display_id",
+      "description": "gene.xrefs.RFAM.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "RFAM",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.miRBase_transcript_name.display_id",
+      "description": "tr.xrefs.miRBase_transcript_name.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "miRBase_transcript_name",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RFAM_transcript_name.display_id",
+      "description": "tr.xrefs.RFAM_transcript_name.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RFAM_transcript_name",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.EVENTLENGTH",
+      "description": "sa.info.EVENTLENGTH",
+      "queryname": [
+        "sa",
+        "info",
+        "EVENTLENGTH"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.AD.alt2",
+      "description": "sa.AD.alt2",
+      "queryname": [
+        "sa",
+        "AD",
+        "alt2"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.domain.end",
+      "description": "tr.domain.end",
+      "queryname": [
+        "tr",
+        "domain",
+        "end"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.DDK\/Pas",
+      "description": "popfreq.DDK\/Pas",
+      "queryname": [
+        "popfreq",
+        "DDK\/Pas"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.ABI:CRAMUS_MOUSE",
+      "description": "popfreq.ABI:CRAMUS_MOUSE",
+      "queryname": [
+        "popfreq",
+        "ABI:CRAMUS_MOUSE"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.domain.name",
+      "description": "tr.domain.name",
+      "queryname": [
+        "tr",
+        "domain",
+        "name"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "popfreq.CAST\/Ei",
+      "description": "popfreq.CAST\/Ei",
+      "queryname": [
+        "popfreq",
+        "CAST\/Ei"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "vp",
+      "description": "The position of this variant as specified by the VCF format specification",
+      "queryname": [
+        "vp"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.goslim_goa.display_id",
+      "description": "tr.xrefs.goslim_goa.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "goslim_goa",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.miRBase.display_id",
+      "graph": {
+        "name": "gene.xrefs.miRBase.display_id database values"
+      },
+      "description": "gene.xrefs.miRBase.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "miRBase",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_peptide.description",
+      "description": "tr.xrefs.RefSeq_peptide.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_peptide",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.Clone_based_vega_transcript.display_id",
+      "description": "tr.xrefs.Clone_based_vega_transcript.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "Clone_based_vega_transcript",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.UniGene.description",
+      "description": "gene.xrefs.UniGene.description",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "UniGene",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.Uniprot\/SPTREMBL.description",
+      "description": "tr.xrefs.Uniprot\/SPTREMBL.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "Uniprot\/SPTREMBL",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.Uniprot_genename.display_id",
+      "description": "gene.xrefs.Uniprot_genename.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "Uniprot_genename",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.WikiGene.description",
+      "description": "gene.xrefs.WikiGene.description",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "WikiGene",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_mRNA.display_id",
+      "description": "tr.xrefs.RefSeq_mRNA.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_mRNA",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.WikiGene.display_id",
+      "description": "gene.xrefs.WikiGene.display_id",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "WikiGene",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_mRNA.description",
+      "description": "tr.xrefs.RefSeq_mRNA.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_mRNA",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "sa.info.PV4.sb",
+      "description": "sa.info.PV4.sb",
+      "queryname": [
+        "sa",
+        "info",
+        "PV4",
+        "sb"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.shares_CDS_with_OTTT.display_id",
+      "graph": {
+        "name": "tr.xrefs.shares_CDS_with_OTTT.display_id database values"
+      },
+      "description": "tr.xrefs.shares_CDS_with_OTTT.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "shares_CDS_with_OTTT",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.Uniprot\/SWISSPROT.description",
+      "description": "tr.xrefs.Uniprot\/SWISSPROT.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "Uniprot\/SWISSPROT",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "gene.xrefs.EntrezGene.description",
+      "description": "gene.xrefs.EntrezGene.description",
+      "queryname": [
+        "gene",
+        "xrefs",
+        "EntrezGene",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_peptide.display_id",
+      "description": "tr.xrefs.RefSeq_peptide.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_peptide",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.RefSeq_ncRNA.description",
+      "description": "tr.xrefs.RefSeq_ncRNA.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "RefSeq_ncRNA",
+        "description"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.CCDS.display_id",
+      "description": "tr.xrefs.CCDS.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "CCDS",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.Uniprot\/SWISSPROT.display_id",
+      "description": "tr.xrefs.Uniprot\/SWISSPROT.display_id",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "Uniprot\/SWISSPROT",
+        "display_id"
+      ],
+      "bVisible": false
+    },
+    {
+      "sName": "tr.xrefs.goslim_goa.description",
+      "description": "tr.xrefs.goslim_goa.description",
+      "queryname": [
+        "tr",
+        "xrefs",
+        "goslim_goa",
+        "description"
+      ],
+      "bVisible": false
+    }
+  ]
+}

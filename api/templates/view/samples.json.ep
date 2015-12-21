@@ -1,0 +1,191 @@
+{
+  "collection": "samples",
+  "view": "samples",
+  "name": "samples",
+  "dom": "<'H'f>rt",
+  "mongoid": [
+    [
+      "_id"
+    ],
+    [
+      "project",
+      "id"
+    ]
+  ],
+  "columns": [
+    {
+      "sName": "View",
+      "bSortable": false,
+      "bSearchable": false,
+      "template": "<img class='pane' src='img\/details_open.png' showtable='variants' samplesid='<%%= $id %>' samplesname='<%%= $name %>' \/>",
+      "stash": {
+        "id": {
+          "ref_column": "_id"
+        },
+        "name": {
+          "ref_column": "name"
+        }
+      }
+    },
+    {
+      "sName": "ID",
+      "showable": false,
+      "bVisible": false,
+      "queryname": [
+        "_id"
+      ],
+      "querytype": "mongo_id"
+    },
+    {
+      "sName": "Name",
+      "queryname": [
+        "name"
+      ],
+      "sorting": true
+    },
+    {
+      "sName": "Description",
+      "queryname": [
+        "description"
+      ]
+    },
+    {
+      "sName": "Genomebuild",
+      "queryname": [
+        "genome"
+      ]
+    },
+    {
+      "sName": "Project",
+      "bSortable": false,
+      "queryname": [
+        "project",
+        "name"
+      ],
+      "template": {
+        "name": "concat",
+        "option": "\/"
+      }
+    },
+    {
+      "sName": "Project ID",
+      "showable": false,
+      "bVisible": false,
+      "queryname": [
+        "project",
+        "id"
+      ],
+      "querytype": "mongo_id"
+    },
+    {
+      "sName": "File type",
+      "customSort": true,
+      "queryname": [
+        "files",
+        "filetype"
+      ]
+    },
+    {
+      "sName": "File location",
+      "customSort": true,
+      "queryname": [
+        "files",
+        "type"
+      ]
+    },
+    {
+      "sName": "Filename",
+      "bVisible": false,
+      "customSort": true,
+      "queryname": [
+        "files",
+        "file"
+      ]
+    },
+    {
+      "sName": "File name",
+      "customSort": true,
+      "queryname": [
+        "files",
+        "name"
+      ]
+    },
+    {
+      "sName": "Compression",
+      "customSort": true,
+      "queryname": [
+        "files",
+        "compression"
+      ]
+    },
+    {
+      "sName": "File host",
+      "customSort": true,
+      "bVisible": false,
+      "queryname": [
+        "files",
+        "host"
+      ]
+    },
+    {
+      "sName": "Username",
+      "customSort": true,
+      "queryname": [
+        "files",
+        "user"
+      ]
+    },
+    {
+      "sName": "Select",
+      "bSearchable": false,
+      "bSortable": false,
+      "template": "<input class='multi_select' type='checkbox' showtable='samples' samplesid='<%%= $id %>' samplesname='<%%= $name %>'>",
+      "stash": {
+        "id": {
+          "ref_column": "_id"
+        },
+        "name": {
+          "ref_column": "name"
+        }
+      },
+      "showtable": "samples"
+    },
+    {
+      "sName": "Edit",
+      "bSearchable": false,
+      "bSortable": false,
+      "template": "<img class='resample table_icon need_projects' src='img\/edit.png' sampleid='<%%= $id %>' samplename='<%%= $name %>' action='rename_remove_sample' title='Edit sample'\/>",
+      "stash": {
+        "id": {
+          "ref_column": "_id"
+        },
+        "name": {
+          "ref_column": "name"
+        }
+      }
+    },
+    {
+      "sName": "Remove",
+      "bSearchable": false,
+      "bSortable": false,
+      "template": "<img class='resample table_icon' src='img\/cancel.png' sampleid='<%%= $id %>' samplename='<%%= $name %>' action='rename_remove_sample' del='yes' title='Remove sample'\/>",
+      "stash": {
+        "id": {
+          "ref_column": "_id"
+        },
+        "name": {
+          "ref_column": "name"
+        }
+      }
+    },
+    {
+      "sName": "Filetype",
+      "showable": false,
+      "bVisible": false,
+      "queryname": [
+        "files",
+        "filetype"
+      ]
+    }
+  ]
+}

@@ -1,16 +1,3 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<!--
-Design by Free CSS Templates
-http://www.freecsstemplates.org
-Released for free under a Creative Commons Attribution 2.5 License
-
-Name       : Old Stairwell 
-Description: A two-column, fixed-width design with dark color scheme.
-Version    : 1.0
-Released   : 20130313
-
--->
-<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>seqplorer - Live</title>
@@ -48,12 +35,19 @@ Released   : 20130313
 	<script type="text/javascript" src="js/webstart.js"></script>
 
 	<script type="text/javascript" src="js/chosen.jquery.js"></script>
-
-	<!-- Get userid from session variables 
+	<!-- Get userid from session variables -->
 	<script language="javascript" type="text/javascript">
-   		var userid = '<?php echo $_SESSION['email']; ?>';
-   		var SEQPLORER = new SEQPLORER('<?php echo $seqplorer_args; ?>');
- 	</script>-->
+   		var arguments = {
+			user: '<%= session 'email' %>',
+			userid: '<%= session 'userid' %>',
+			all_groups: '<%= session 'groups' %>',
+			all_projects: '<%= session 'projects' %>',
+			all_samples: '<%= session 'samples' %>',
+			shiny_url: '<%= $shiny_url %>',
+			qsub_url: '<%= $qsub_url %>'
+   		};
+   		var SEQPLORER = new SEQPLORER(arguments);
+ 	</script>
 </head>
 <body>
 	<div id="wrapper">
@@ -63,22 +57,23 @@ Released   : 20130313
 			</div>
 			<div id="menu">
 				<ul>
-					<!--<?php if ($_SESSION['email'] != strtoupper('guest@seqplorer.org')){ ?>-->
+					<% if (@{$role}[0] ne 'guest'){ %>
 						<li><a class=' menu headermenu pv_normal' href='' type='projects' title='Manage projects &  samples'><img src='img/projects.png' /></a></li>
 						<li><a class='settings headermenu pv_normal' href='' title='Settings'><img src='img/settings.png' /></a></li>
 		 				<!--<li><a class='logs headermenu ' action='logs' href='' title='Show logs'><img src='img/logs.png' /></a></li>-->
-					<!--<?php } ?>-->
+					<% } %>
 					<li><a class='page_view headermenu pv_variants' pview='variants' href='' title='Show my projects'><img src='img/default_view.png' /></a></li>
 					<li><a class='page_view headermenu pv_normal' pview='only_variants' href='' title='Show all variants in the database'><img src='img/variants_view.png' /></a></li>
 					<li><a id='showdiv' class='headermenu' url='faq.php' href='https://github.com/brdwilde/Seqplorer/wiki' title='FAQ'><img src='img/faq.png' /></a></li>
 					<li><a id='showdiv' class='headermenu' url='manual.php' href='https://github.com/brdwilde/Seqplorer/wiki' title='Manual'><img src='img/manual.png' /></a></li>
 					<li><a  class='popup headermenu' action='contact' href='https://github.com/brdwilde/Seqplorer/wiki' title='Contact'><img src='img/contact.png' /></a></li>
-<!--					<?php if ($_SESSION['email'] == strtoupper('guest@seqplorer.org')){ ?>-->
-						<li><a class='popup headermenu' action='login' href='' title='Login/Register'><img src='img/login.png' /></a></li>
-<!--					<?php } else {?>-->
-						<li><a class='logout headermenu' href='' title='Logout'><img src='img/logout.png' /></a></li>
-<!--					<?php }?>-->
-					<li><a class='headermenu' href='index.php' title='Home'><img src='img/home.png' /></a></li>
+					<% if (@{$role}[0] eq 'guest'){ %>
+						<li><a class='popup headermenu' href='' title='Login/Register' action='login'><img src='img/login.png' /></a>
+						</li>
+					<% } else { %>
+						<li><a class='headermenu' href='logout' title='Logout'><img src='img/logout.png' /></a></li>
+					<% } %>
+					<li><a class='headermenu' href='/' title='Home'><img src='img/home.png' /></a></li>
 				</ul>
 			</div>
 		</div>
@@ -136,11 +131,10 @@ Released   : 20130313
 							</ul>
 						</div>
 					</a>
-<!--				    <?php if ($_SESSION['email'] != strtoupper('guest@seqplorer.org')){ ?>-->
-				    	<a href='' class='export' action='export' table='variants' title='Export'><img src='img/export.png' /></a>
+					<% if (@{$role}[0] ne 'guest'){ %>
+					   	<a href='' class='export' action='export' table='variants' title='Export'><img src='img/export.png' /></a>
 				    	<a href='' class='export' action='create_plot' table='variants' title='Create plot'><img src='img/stats.png' /></a>
-				    <!-- <a href='' class='header_button' url='newsample.php' table='variants' title='New sample'><img src='img/new_sample.png' /></a> -->
-<!--				    <?php }?>-->
+					<% } %>
 				    <a href='' id="variants_header">Variants: </a> 
 				</h3>			
 				<div>
@@ -159,3 +153,4 @@ Released   : 20130313
 	</div>
 </body>
 </html>
+

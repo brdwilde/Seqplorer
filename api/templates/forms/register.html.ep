@@ -1,0 +1,22 @@
+%= include 'forms/formheader', title => 'Register'
+<form>
+	<ul>
+		<li> <label>E-mail </label>
+			<input type="text" size="30"  name="email" id="email" class="required" title="Please provide your e-mail adress"></li>
+		<li> <label>Password</label>
+			<input type="password" size="30"  name="password" id="password" class="required" title="Please provide your password"></li>
+		<li> <label>Confirm password</label>
+			<input type="password" size="30"  name="confirmpassword" id="confirmpassword" class="required" title="Please confirm your password"></li>
+		<li> <label>First Name</label>
+			<input type="text" size="30"  name="firstname" id="firstname" class="required" title="Provide a name we may adress you with"></li>
+		<li> <label>Last Name</label>
+			<input type="text" size="30"  name="lastname" id="lastname" title="Provide your last name, this is optional"></li>
+		<li> <label>Institution</label>
+			<input type="text" size="30"  name="institution" id="institution" title="Provide the institution you work at, this is optional"></li>
+		<li> <label>Department</label>
+			<input type="text" size="30"  name="departement" id="departement" title="Provide the department you work at, this is optional"></li>
+		<li> <label>Country</label>
+			<input type="text" size="30"  name="country" id="country" title="Provide your country, this is optional"></li>
+		<li><input type="submit" id="registerbutton" <%= 'disabled' if $config->{site}->{demo};%>><div id="messagearea">	<%= 'Registration not enabled in demo version' if $config->{site}->{demo};%> </div></li>
+	</ul>
+</form>	

@@ -1,0 +1,2 @@
+<a id="hidediv" href=""><img class="cancel_popup" src="img/back.png"></a>
+<h1 class='formtitle'><%= $title %></h1>

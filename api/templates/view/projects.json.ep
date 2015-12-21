@@ -1,0 +1,93 @@
+{
+  "collection": "projects",
+  "view": "projects",
+  "name": "projects",
+  "dom": "<'H'f>rt",
+  "mongoid": [
+    [
+      "_id"
+    ],
+    [
+      "groups",
+      "id"
+    ]
+  ],
+  "columns": [
+    {
+      "sName": "View",
+      "bSortable": false,
+      "bSearchable": false,
+      "template": "<img class='pane' src='img\/details_open.png' showtable='samples' projectsid='<%%= $id %>' projectsname='<%%= $name %>' \/>",
+      "stash": {
+        "id": {
+          "ref_column": "_id"
+        },
+        "name": {
+          "ref_column": "name"
+        }
+      }
+    },
+    {
+      "sName": "ID",
+      "showable": false,
+      "bVisible": false,
+      "queryname": [
+        "_id"
+      ],
+      "querytype": "mongo_id"
+    },
+    {
+      "sName": "Name",
+      "queryname": [
+        "name"
+      ],
+      "sorting": true
+    },
+    {
+      "sName": "Groups",
+      "queryname": [
+        "groups",
+        "name"
+      ],
+      "template": {
+        "name": "concat",
+        "option": "_"
+      }
+    },
+    {
+      "sName": "Group ID",
+      "showable": false,
+      "bVisible": false,
+      "queryname": [
+        "groups",
+        "id"
+      ],
+      "querytype": "mongo_id",
+      "template": {
+        "name": "concat",
+        "option": "_"
+      }
+    },
+    {
+      "sName": "Description",
+      "queryname": [
+        "description"
+      ]
+    },
+    {
+      "sName": "Select",
+      "bSearchable": false,
+      "bSortable": false,
+      "template": "<input class='multi_select' type='checkbox' showtable='samples' projectsid='<%%= $id %>' projectname='<%%= $name %>'>",
+      "stash": {
+        "id": {
+          "ref_column": "_id"
+        },
+        "name": {
+          "ref_column": "name"
+        }
+      },
+      "showtable": "samples"
+    }
+  ]
+}
