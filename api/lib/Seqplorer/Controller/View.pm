@@ -23,9 +23,6 @@ sub create {
 	$self->app->log->debug("Controller: save new view");
 	my $parsedJSON=$self->req->json;
 
-	use Data::Dumper;
-	$self->app->log->debug("Submitted data: ".Dumper($parsedJSON));
-
 	# check the input
 	unless(defined $parsedJSON->{'columns'} &&  defined $parsedJSON->{'collection'} && defined $parsedJSON->{'name'}  &&  defined $parsedJSON->{'projects'} ){
 		$self->app->log->debug("Controller: save new view failed, missing values");

@@ -59,16 +59,41 @@ sub get {
 	};
 
 	my $return;
+	my $columns;
 
 	if ($viewId eq "variants" || $viewId eq "variants_only"){
 		$return = $templates->{'variants'};
 		$return->{_id} = $viewId;
 		$return->{view} = $viewId;
 		$return->{name} = $viewId;
+		$columns = [
+				_html_column({
+					'name' => "Detail",
+					'type' => "img",
+					'stashvars' => {"variantid" => "_id"},
+					'imagename' => "details_open.png"}),
+				_html_column({
+					'name' => "View IGV",
+					'type' => "link",
+					'link' => "http://localhost:60151/goto?locus=<%%= \$chromosome %>:<%%= \$start %>-<%%= \$end %>",
+					'classes' => ["igv","table_icon"],
+					'stashvars' => {"chromosome" => "c", "start" => "s", "end" => "e"},
+					'imagename' => "IGV_32.png"}),
+				_html_column({
+					'name' => "Detail",
+					'type' => "link",
+					'link' => "http://www.ensembl.org/Homo_sapiens/Location/Overview?r=<%%= \$chromosome %>:<%%= \$start %>-<%%= \$end %>",
+					'classes' => ["ensembl","table_icon"],
+					'stashvars' => {"chromosome" => "c", "start" => "s", "end" => "e"},
+					'imagename' => "Ensembl.jpg"}),
+				"_id","b","c","karyo","s","e","v","va","vp","r","t","name",
+				"sa.sn","sa.DP","sa.allelequal",
+				"tr.gene","tr.tr","tr.str","tr.cdnas","tr.con","tr.peps","tr.ppos","tr.pphe","tr.pphes","tr.sift","tr.sifts"
+		];
 	} elsif ($viewId eq "projects"){
 		$return = $templates->{"projects"};
 
-		$return->{'columns'} = [ 
+		$columns = [ 
 				_html_column({
 					'name' => "View",
 					'type' => "img",
@@ -91,7 +116,7 @@ sub get {
 	} elsif ($viewId eq "samples"){
 		$return = $templates->{"samples"};
 
-		$return->{columns} = [
+		$columns = [
 				_html_column({
 					'name' => "View",
 					'type' => "img",
@@ -150,48 +175,74 @@ sub get {
 	
 		$return->{'_id'} = $viewDoc->{'_id'};
 		$return->{'name'} = $viewDoc->{'name'};
+		$columns = $viewDoc->{'columns'};
+	}
 
-		for my $column (@{$viewDoc->{'columns'}}) {
-			if (ref$column eq 'HASH') {
-				# this column element is fully encoded in the view record
-				push @{$return->{'columns'}}, $column;
-			} else {
-				# in case of column dot notation: create a default column
-				my @arraynotation = split(/\./,$column);
-				my $element = { "sName" => $column, "queryname" => \@arraynotation };
-				# if(defined $column->{'queryname'}){
-				# 	$column->{'dotnotation'} = join('.',@{$column->{'queryname'}});
-				# }
-				# #hash: key dotnotation to valus: queryname (query array)
-				# #->unused in frontend
-				# $return->{'queryarray'}{$column->{'dotnotation'}}=$column->{'queryname'} if defined $column->{'dotnotation'};
-				# #create array of dotnotation names of all cols
-				# #->unused in frontend
-				# push @{$return->{'fields'}}, $column->{'dotnotation'} if defined $column->{'dotnotation'};
-				# #add extra info from _unique collection
-
-				if($collection eq 'variants'){
-					# get record form "unique" collection
-					my $uniqueDoc = $self->mongoDB->db->collection($variants_unique_coll)->find_one({'_id' => $column});
-					if($uniqueDoc){
-						$element->{'sName'} = $uniqueDoc->{'name'} if $uniqueDoc->{'name'};
-						$element->{'queryname'} = $uniqueDoc->{'querykeys'};
-						$element->{'type'} = $uniqueDoc->{'type'} if $uniqueDoc->{'type'};
-						$element->{'description'} = $uniqueDoc->{'description'} if $uniqueDoc->{'description'};
-
-						$element->{'values'} = $uniqueDoc->{'values'} if $uniqueDoc->{'values'} && ref($uniqueDoc->{'values'}[0]) ne 'ARRAY';
-						#$column->{'searchtype'}=$uniqueDoc->{'type'};
-						#if(defined $uniqueDoc->{'values'} && scalar(@{$uniqueDoc->{'values'}}) > 1 ){
-						# 	$column->{'list'}=$uniqueDoc->{'values'};
-						# }
-						# if($uniqueDoc->{'type'} eq 'mongo_id'){
-						# 	push @{$return->{'mongoid'}}, $uniqueDoc->{'querykeys'};
-						# }
-						
-					}
+	# walk through the columns and add the columns referred to by the "stash" variables as invisible columns if they are not there yet
+	my %stashcolumns;
+	my %allcolumns;
+	foreach my $column (@$columns) {
+		if (ref$column eq 'HASH') {
+			if ($column->{stash}){
+				foreach my $key (keys %{$column->{stash}}){
+					$stashcolumns{$column->{stash}->{$key}} = 1;
 				}
-				push @{$return->{'columns'}}, $element;
 			}
+			$allcolumns{join(".",$column->{queryname})} = 1 if ($column->{queryname});
+		} else {
+			$allcolumns{$column} = 1;
+		}
+	}
+
+	foreach my $col (keys %stashcolumns){
+		push (@$columns,{"queryname" => [$col], "showable" => \0, "bVisible" => \0 }) unless ($allcolumns{$col});
+	}
+	# now remove the stashcolumns if the are already part of the columns
+
+
+	for my $column (@$columns) {
+		if (ref$column eq 'HASH') {
+			# this column element is fully encoded in the view record
+			push @{$return->{'columns'}}, $column;
+		} else {
+			# in case of column dot notation: create a default column
+			my @arraynotation = split(/\./,$column);
+			my $element = { "sName" => $column, "queryname" => \@arraynotation };
+			# if(defined $column->{'queryname'}){
+			# 	$column->{'dotnotation'} = join('.',@{$column->{'queryname'}});
+			# }
+			# #hash: key dotnotation to valus: queryname (query array)
+			# #->unused in frontend
+			# $return->{'queryarray'}{$column->{'dotnotation'}}=$column->{'queryname'} if defined $column->{'dotnotation'};
+			# #create array of dotnotation names of all cols
+			# #->unused in frontend
+			# push @{$return->{'fields'}}, $column->{'dotnotation'} if defined $column->{'dotnotation'};
+			# #add extra info from _unique collection
+
+			if($return->{collection} eq 'variants'){
+				# get record form "unique" collection
+				my $uniqueDoc = $self->mongoDB->db->collection($variants_unique_coll)->find_one({'_id' => $column});
+				if($uniqueDoc){
+					$element->{'sName'} = $uniqueDoc->{'name'} if $uniqueDoc->{'name'};
+					$element->{'queryname'} = $uniqueDoc->{'querykeys'};
+					$element->{'type'} = $uniqueDoc->{'type'} if $uniqueDoc->{'type'};
+					$element->{'description'} = $uniqueDoc->{'description'} if $uniqueDoc->{'description'};
+					$element->{'stats'} = $uniqueDoc->{'stats'} if $uniqueDoc->{'stats'};
+					$element->{'graph'} = $uniqueDoc->{'graph'} if $uniqueDoc->{'graph'};
+
+					$element->{'values'} = $uniqueDoc->{'values'} if $uniqueDoc->{'values'} && ref($uniqueDoc->{'values'}[0]) ne 'ARRAY';
+					$element->{'showable'} = \0 if $uniqueDoc->{'type'} eq 'mongo_id';
+					#$column->{'searchtype'}=$uniqueDoc->{'type'};
+					#if(defined $uniqueDoc->{'values'} && scalar(@{$uniqueDoc->{'values'}}) > 1 ){
+					# 	$column->{'list'}=$uniqueDoc->{'values'};
+					# }
+					# if($uniqueDoc->{'type'} eq 'mongo_id'){
+					# 	push @{$return->{'mongoid'}}, $uniqueDoc->{'querykeys'};
+					# }
+					
+				}
+			}
+			push @{$return->{'columns'}}, $element;
 		}
 	}
 #	$cache->set($viewId, \%return);
@@ -250,6 +301,7 @@ sub _html_column {
 
 	my $name = $args->{'name'};
 	my $type = $args->{'type'};
+	my $link = $args->{'link'};
 	my $classes = $args->{'classes'};
 	my $atributes = $args->{'atributes'};
 	my $stashvars = $args->{'stashvars'};
@@ -258,7 +310,10 @@ sub _html_column {
 	my $html = '';
 	my $stash;
 
-    if ($type eq 'img'){
+	if ($type eq 'link'){
+		$html .= "<a href='".$link."'>";
+	}
+    if ($type eq 'img' || $imagename){
     	$html .= "<img src='img\/".$imagename."' ";
     } elsif ($type eq 'checkbox'){
     	$html .= "<input type='checkbox' ";
@@ -282,6 +337,10 @@ sub _html_column {
     	}
     }
     $html .= "title='".$name."'\/>";
+
+    if ($type eq 'link'){
+		$html .= "</a>";
+	}
 
 
 	my $column = {
