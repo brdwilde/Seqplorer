@@ -11,7 +11,7 @@ sub submit {
 	my $collection = $self->stash('collection');
 	my $output;
 	# TODO Depreciated? Set record_height for table/list in row styling
-	$output->{'record_height'} = 0;
+	#$output->{'record_height'} = 0;
 	## Check 'where' filter
 	my $where = $self->param('where');
 	my $countColumns = $self->param('iColumns') || 2;
@@ -38,7 +38,7 @@ sub submit {
 	my $viewDoc = $viewModel->get({'_id' => $viewId});
 	$self->app->log->debug("View response: ".Dumper($viewDoc));
 	foreach my $column (@{$viewDoc->{'columns'}}){
-		push (@	$fields, $column->{'queryname'}) if ($column->{'queryname'});		
+		push (@$fields, $column->{'queryname'}) if ($column->{'queryname'});		
 	}
 	#} 
 	if ($collection eq 'projects') {
@@ -139,9 +139,8 @@ sub submit {
 				delete $stash{'value'} if defined $stash{'value'};
 				for my $stashKey (keys %stash){
 					#check if some stash values are references to other columns
-					if(ref($stash{$stashKey}) eq 'HASH' && defined $stash{$stashKey}->{'ref_column'} ){
-						my $tmpVal = $stash{$stashKey}->{'ref_column'};
-						$stash{$stashKey}=$record->{$tmpVal};
+					if(ref($stash{$stashKey}) eq 'HASH' && defined $record->{$stash{$stashKey}}){
+						$stash{$stashKey}=$record->{$stash{$stashKey}};
 					}
 				}
 				if(defined $col->{'dotnotation'} && defined $record->{$col->{'dotnotation'}}){

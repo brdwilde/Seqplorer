@@ -124,7 +124,8 @@ sub startup {
 	# only valid users can update rename or remove views
 	$r->post('/view/:viewid')->over(is => 'user')->to('view#edit');
 	$r->post('/view/name/:viewid')->over(is => 'user')->to('view#editname');
-	$r->post('/view')->over(is => 'user')->to('view#create');
+	#$r->post('/view')->over(is => 'user')->to('view#create');
+	$r->post('/view/create/')->to('view#create');
 
 	# tools
 	$r->route('/md5')->via('POST')->to('tools#md5sum');

@@ -68,11 +68,11 @@ sub fetch {
 	if (defined $options->{'fields'}){
 		my $hashFields;
 		foreach my $field (@{$options->{'fields'}}){
-			#if (ref($field) eq 'ARRAY') {
+			if (ref($field) eq 'ARRAY') {
 				$hashFields->{join('.',@{$field})} = 1;
-			#} else {
-			#	$hashFields->{$field} = 1;
-			#}
+			} else {
+				$hashFields->{$field} = 1;
+			}
 		}
 		$cursor->fields($hashFields);
 	}

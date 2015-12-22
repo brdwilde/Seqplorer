@@ -68,9 +68,6 @@ sub get {
 	} elsif ($viewId eq "projects"){
 		$return = $templates->{"projects"};
 
-#use Data::Dumper;
-#$self->app->log->debug("View return ".Dumper($var,_html_column($var)));
-
 		$return->{'columns'} = [ 
 				_html_column({
 					'name' => "View",
@@ -95,241 +92,105 @@ sub get {
 		$return = $templates->{"samples"};
 
 		$return->{columns} = [
-			{
-		      "sName" => "View",
-		      "bSortable" => \0,
-		      "bSearchable" => \0,
-		      "template" => "<img class='pane' src='img\/details_open.png' showtable='variants' samplesid='<%%= \$id %>' samplesname='<%%= \$name %>' \/>",
-		      "stash" => {
-		        "id" => {
-		          "ref_column" => "_id"
-		        },
-		        "name" => {
-		          "ref_column" => "name"
-		        }
-		      }
-		    },
-		    {
-		      "sName" => "Select",
-		      "bSearchable" => \0,
-		      "bSortable" => \0,
-		      "template" => "<input class='multi_select' type='checkbox' showtable='samples' samplesid='<%%= \$id %>' samplesname='<%%= \$name %>'>",
-		      "stash" => {
-		        "id" => {
-		          "ref_column" => "_id"
-		        },
-		        "name" => {
-		          "ref_column" => "name"
-		        }
-		      },
-		      "showtable" => "samples"
-		    },
-		    {
-		      "sName" => "ID",
-		      "showable" => \0,
-		      "bVisible" => \0,
-		      "queryname" => [
-		        "_id"
-		      ],
-		      "querytype" => "mongo_id"
-		    },
-		    {
-		      "sName" => "Name",
-		      "queryname" => [
-		        "name"
-		      ],
-		      "sorting" => \1
-		    },
-		    {
-		      "sName" => "Description",
-		      "queryname" => [
-		        "description"
-		      ]
-		    },
-		    {
-		      "sName" => "Genomebuild",
-		      "queryname" => [
-		        "genome"
-		      ]
-		    },
-		    {
-		      "sName" => "Project",
-		      "bSortable" => \0,
-		      "queryname" => [
-		        "project",
-		        "name"
-		      ],
-		      "template" => {
-		        "name" => "concat",
-		        "option" => "\/"
-		      }
-		    },
-		    {
-		      "sName" => "Project ID",
-		      "showable" => \0,
-		      "bVisible" => \0,
-		      "queryname" => [
-		        "project",
-		        "id"
-		      ],
-		      "querytype" => "mongo_id"
-		    },
-		    {
-		      "sName" => "File type",
-		      "customSort" => \1,
-		      "queryname" => [
-		        "files",
-		        "filetype"
-		      ]
-		    },
-		    {
-		      "sName" => "File location",
-		      "customSort" => \1,
-		      "queryname" => [
-		        "files",
-		        "type"
-		      ]
-		    },
-		    {
-		      "sName" => "Filename",
-		      "bVisible" => \0,
-		      "customSort" => \1,
-		      "queryname" => [
-		        "files",
-		        "file"
-		      ]
-		    },
-		    {
-		      "sName" => "File name",
-		      "customSort" => \1,
-		      "queryname" => [
-		        "files",
-		        "name"
-		      ]
-		    },
-		    {
-		      "sName" => "Compression",
-		      "customSort" => \1,
-		      "queryname" => [
-		        "files",
-		        "compression"
-		      ]
-		    },
-		    {
-		      "sName" => "File host",
-		      "customSort" => \1,
-		      "bVisible" => \0,
-		      "queryname" => [
-		        "files",
-		        "host"
-		      ]
-		    },
-		    {
-		      "sName" => "Filetype",
-		      "showable" => \0,
-		      "bVisible" => \0,
-		      "queryname" => [
-		        "files",
-		        "filetype"
-		      ]
-		    },
-		    {
-		      "sName" => "Username",
-		      "customSort" => \1,
-		      "queryname" => [
-		        "files",
-		        "user"
-		      ]
-		    },
-		    {
-		      "sName" => "Edit",
-		      "bSearchable" => \0,
-		      "bSortable" => \0,
-		      "template" => "<img class='resample table_icon need_projects' src='img\/edit.png' sampleid='<%%= \$id %>' samplename='<%%= \$name %>' action='rename_remove_sample' title='Edit sample'\/>",
-		      "stash" => {
-		        "id" => {
-		          "ref_column" => "_id"
-		        },
-		        "name" => {
-		          "ref_column" => "name"
-		        }
-		      }
-		    },
-		    {
-		      "sName" => "Remove",
-		      "bSearchable" => \0,
-		      "bSortable" => \0,
-		      "template" => "<img class='resample table_icon' src='img\/cancel.png' sampleid='<%%= \$id %>' samplename='<%%= \$name %>' action='rename_remove_sample' del='yes' title='Remove sample'\/>",
-		      "stash" => {
-		        "id" => {
-		          "ref_column" => "_id"
-		        },
-		        "name" => {
-		          "ref_column" => "name"
-		        }
-		      }
-		    }
-		];
+				_html_column({
+					'name' => "View",
+					'type' => "img",
+					'classes' => ["pane"],
+					'atributes' => { 'showtable' =>'variants'},
+					'stashvars' => {"samplesid" => "_id", "samplessname"=>"name"},
+					'imagename' => "details_open.png"}),
+				 _html_column({
+					'name' => "Select",
+					'type' => "checkbox",
+					'classes' => ["multi_select"],
+					'stashvars' => {"samplesid" => "_id", "samplessname"=>"name"}}),
+			    { "sName" => "ID", "queryname" => [ "_id" ], "showable" => \0, "bVisible" => \0 },
+			    { "sName" => "Name", "queryname" => [ "name" ], "sorting" => \1 },
+			    { "sName" => "Description", "queryname" => [ "description" ] },
+			    { "sName" => "Genomebuild", "queryname" => [ "genome" ] },
+			    { "sName" => "Project", "queryname" => [ "project", "name" ], "template" => { "name" => "concat", "option" => "\/" }, "bSortable" => \0 },
+			    { "sName" => "Project ID", "queryname" => [ "project", "id" ], "showable" => \0, "bVisible" => \0 },
+			    { "sName" => "File name", "queryname" => [ "files", "name" ] },
+			    { "sName" => "File type", "queryname" => [ "files", "filetype" ] },
+			    { "sName" => "File location", "queryname" => [ "files", "type" ] },
+			    { "sName" => "Filename", "queryname" => [ "files", "file" ], "showable" => \0, "bVisible" => \0 },
+			    { "sName" => "Compression", "queryname" => [ "files", "compression" ] },
+			    { "sName" => "File host", "queryname" => [ "files", "host" ], "showable" => \0, "bVisible" => \0 },
+			    { "sName" => "Filetype", "queryname" => [ "files", "filetype" ], "showable" => \0, "bVisible" => \0 },
+			    { "sName" => "Username", "queryname" => [ "files", "user" ] },
+		    	_html_column({
+					'name' => "Edit",
+					'type' => "img",
+					'classes' => ["resample","table_icon","need_projects"],
+					'atributes' => { 'action' => 'rename_remove_sample'},
+					'stashvars' => {"sampleid" => "_id", "samplesname"=>"name"},
+					'imagename' => "edit.png"}),
+		    	_html_column({
+					'name' => "View",
+					'type' => "img",
+					'classes' => ["resample","table_icon"],
+					'atributes' => { 'action' => 'rename_remove_sample', 'del' => 'yes'},
+					'stashvars' => {"sampleid" => "_id", "samplesname"=>"name"},
+					'imagename' => "cancel.png"}),
+			];
 	} else {
 		my $viewID_OID = ( $viewId =~ /^[0-9a-fA-F]{24}$/ ) ? Mango::BSON::ObjectID->new($viewId) : { '_id' => $viewId };
-		$self->app->log->debug("Get view from mongo: $viewId = $viewID_OID => ".ref($viewID_OID));
+		#$self->app->log->debug("Get view from mongo: $viewId = $viewID_OID => ".ref($viewID_OID));
 		my $viewDoc = $viewCollection->find_one($viewID_OID);
 		
 		my $collection = $viewDoc->{'collection'};
 
-		$return = $templates->{$collection};
-	
-#	my $cache = $self->app->cache;
-#	if( defined $cache->get($viewId) ){
-#		$self->app->log->debug("Cache hit for get view: $viewId");
-#		return $cache->get($viewId);
-#	}
-#	$self->app->log->debug("Cache miss for get view: $viewId");
-
+		$return = $templates->{$collection};	
+		#	my $cache = $self->app->cache;
+		#	if( defined $cache->get($viewId) ){
+		#		$self->app->log->debug("Cache hit for get view: $viewId");
+		#		return $cache->get($viewId);
+		#	}
+		#	$self->app->log->debug("Cache miss for get view: $viewId");
 	
 		$return->{'_id'} = $viewDoc->{'_id'};
-		$return->{'columns'} = $viewDoc->{'columns'};
-		$return->{'collection'} = $collection;
-	#	use Data::Dumper;
-	#$self->app->log->debug("voor collection_names ".Dumper($self->mongoDB->db->collection_names));
-	#my $existsUnique = grep { /${collection}_unique'/ } @{$self->mongoDB->db->collection_names};
+		$return->{'name'} = $viewDoc->{'name'};
+
 		for my $column (@{$viewDoc->{'columns'}}) {
-			if ($column->{_id}) {
-				my $element = {
-					queryname => $column->{_id},
-					dotnotation => join('.',@{$column->{_id}}),
-					#sName => 
-					#bVisible
-					#showable
-					#bSearchable
-					#querytype
-				};
-			push @{$return->{'columns'}}, $element;
+			if (ref$column eq 'HASH') {
+				# this column element is fully encoded in the view record
+				push @{$return->{'columns'}}, $column;
 			} else {
-				if(defined $column->{'queryname'}){
-					$column->{'dotnotation'} = join('.',@{$column->{'queryname'}});
-				}
-				#hash: key dotnotation to valus: queryname (query array)
-				#->unused in frontend
-				$return->{'queryarray'}{$column->{'dotnotation'}}=$column->{'queryname'} if defined $column->{'dotnotation'};
-				#create array of dotnotation names of all cols
-				#->unused in frontend
-				push @{$return->{'fields'}}, $column->{'dotnotation'} if defined $column->{'dotnotation'};
-				#add extra info from _unique collection
-				if($collection eq 'variants' && defined $column->{'dotnotation'}){
-					my $uniqueDoc = $self->mongoDB->db->collection($collection.'_unique_tmp')->find_one({'_id' => $column->{'dotnotation'} });
-					if(defined $uniqueDoc){
-						$column->{'searchtype'}=$uniqueDoc->{'type'};
-						if(defined $uniqueDoc->{'values'} && scalar(@{$uniqueDoc->{'values'}}) > 1 ){
-							$column->{'list'}=$uniqueDoc->{'values'};
-						}
-						if($uniqueDoc->{'type'} eq 'mongo_id'){
-							push @{$return->{'mongoid'}}, $uniqueDoc->{'querykeys'};
-						}
+				# in case of column dot notation: create a default column
+				my @arraynotation = split(/\./,$column);
+				my $element = { "sName" => $column, "queryname" => \@arraynotation };
+				# if(defined $column->{'queryname'}){
+				# 	$column->{'dotnotation'} = join('.',@{$column->{'queryname'}});
+				# }
+				# #hash: key dotnotation to valus: queryname (query array)
+				# #->unused in frontend
+				# $return->{'queryarray'}{$column->{'dotnotation'}}=$column->{'queryname'} if defined $column->{'dotnotation'};
+				# #create array of dotnotation names of all cols
+				# #->unused in frontend
+				# push @{$return->{'fields'}}, $column->{'dotnotation'} if defined $column->{'dotnotation'};
+				# #add extra info from _unique collection
+
+				if($collection eq 'variants'){
+					# get record form "unique" collection
+					my $uniqueDoc = $self->mongoDB->db->collection($variants_unique_coll)->find_one({'_id' => $column});
+					if($uniqueDoc){
+						$element->{'sName'} = $uniqueDoc->{'name'} if $uniqueDoc->{'name'};
+						$element->{'queryname'} = $uniqueDoc->{'querykeys'};
+						$element->{'type'} = $uniqueDoc->{'type'} if $uniqueDoc->{'type'};
+						$element->{'description'} = $uniqueDoc->{'description'} if $uniqueDoc->{'description'};
+
+						$element->{'values'} = $uniqueDoc->{'values'} if $uniqueDoc->{'values'} && ref($uniqueDoc->{'values'}[0]) ne 'ARRAY';
+						#$column->{'searchtype'}=$uniqueDoc->{'type'};
+						#if(defined $uniqueDoc->{'values'} && scalar(@{$uniqueDoc->{'values'}}) > 1 ){
+						# 	$column->{'list'}=$uniqueDoc->{'values'};
+						# }
+						# if($uniqueDoc->{'type'} eq 'mongo_id'){
+						# 	push @{$return->{'mongoid'}}, $uniqueDoc->{'querykeys'};
+						# }
 						
 					}
 				}
-				push @{$return->{'columns'}}, $column;
+				push @{$return->{'columns'}}, $element;
 			}
 		}
 	}
@@ -341,22 +202,28 @@ sub get {
 }
 
 sub edit {
-  my $self = shift;
+	my $self = shift;
 	my $data = shift;
-	my $viewCollection = $self->mongoDB->db->collection('views');
-	my $viewDoc = {} ;
-	if( defined $data->{'_id'} ){
+
+	my $config = $self->app->config;
+	my $viewcoll = $config->{database}->{collections}->{views} ? $config->{database}->{collections}->{views} : "views";
+	my $viewCollection = $self->mongoDB->db->collection($viewcoll);
+
+	my $viewDoc = {};
+
+	# get old values if an id was submitted
+	if( defined $data->{'_id'} && $data->{'_id'} ne '' ){
 		$viewDoc->{'_id'} = $data->{'_id'};
 		my $viewID_OID = Mango::BSON::ObjectID->new($viewDoc->{'_id'});
 		$self->app->log->debug("Edit: Get view doc from mongo: ".$viewDoc->{'_id'}." = $viewID_OID => ".ref($viewID_OID));
 		$viewDoc = $viewCollection->find_one($viewID_OID);
 	}
-	$viewDoc->{'columns'}=$data->{'columns'};
-	$viewDoc->{'dom'}=$data->{'dom'};
-	$viewDoc->{'restrict'}=$data->{'restrict'};
-	$viewDoc->{'collection'}=$data->{'collection'};
-	$viewDoc->{'projects'}=$data->{'projects'};
-	$viewDoc->{'name'}=$data->{'name'};
+	# update values to new one's
+	$viewDoc->{'columns'} = $data->{'columns'} if $data->{'columns'};
+	$viewDoc->{'collection'} = $data->{'collection'} if $data->{'collection'};
+	$viewDoc->{'projects'} = $data->{'projects'} if $data->{'projects'};
+	$viewDoc->{'name'} = $data->{'name'} if $data->{'name'};
+
 	my $viewDocId = $viewCollection->save($viewDoc);
 	$self->app->log->debug("Edit: Saved view doc to mongo: ".$viewDocId);
 	return $viewDocId;

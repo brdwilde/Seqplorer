@@ -132,6 +132,8 @@ sub authenticate {
 			$self->session(email => $userReturn->{userdata}->{email});
 			$self->session(firstname => $userReturn->{userdata}->{firstname});
 			$self->session(lastname => $userReturn->{userdata}->{lastname});
+			$self->session->{groups} = undef;
+			$self->session->{samples} = undef;
 			$return = { Success => 1, Message => "Logged in user ".$email};
 
 			$self->app->log->debug("Authentication succesfull");	

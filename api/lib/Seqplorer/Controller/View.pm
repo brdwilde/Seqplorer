@@ -9,11 +9,11 @@ sub get {
 	# if($viewId eq "variants" || $viewId eq "samples" || $viewId eq "projects"){
 	# 	$self->render(template => "view/".$viewId, format => 'json');
 	# } else {
-		$self->app->log->debug("Controller: get view ".$viewId);
-		my $viewModel = $self->model('view');
-		my $viewReturn = $viewModel->get({'_id' => $viewId});
+	$self->app->log->debug("Controller: get view ".$viewId);
+	my $viewModel = $self->model('view');
+	my $viewReturn = $viewModel->get({'_id' => $viewId});
 
-		$self->render( json => $viewReturn );		
+	$self->render( json => $viewReturn );		
 	# }
 }
 
@@ -22,31 +22,32 @@ sub create {
 	#my $viewId = $self->stash('viewid');
 	$self->app->log->debug("Controller: save new view");
 	my $parsedJSON=$self->req->json;
-	unless(defined $parsedJSON->{'columns'} &&  defined $parsedJSON->{'collection'} && defined $parsedJSON->{'projects'} && defined $parsedJSON->{'restrict'} && defined $parsedJSON->{'dom'} && defined $parsedJSON->{'name'} ){
+
+	use Data::Dumper;
+	$self->app->log->debug("Submitted data: ".Dumper($parsedJSON));
+
+	# check the input
+	unless(defined $parsedJSON->{'columns'} &&  defined $parsedJSON->{'collection'} && defined $parsedJSON->{'name'}  &&  defined $parsedJSON->{'projects'} ){
 		$self->app->log->debug("Controller: save new view failed, missing values");
 		$self->render( json => { 'failureNoticeHtml' => '<p>Needed values were not defined. Please try again.</p>'} );
 		return;
 	}
-	my $viewData={};
-	if(defined $parsedJSON->{'name'}){
-		$viewData->{'name'} = $parsedJSON->{'name'};
-	}else{
-		$viewData->{'name'} = 'NO NAME';
-	}
+
 	my $viewModel = $self->model('view');
 	my $viewId = $viewModel->edit({
 		'columns' => $parsedJSON->{'columns'},
 		'collection' => $parsedJSON->{'collection'},
 		'projects' => $parsedJSON->{'projects'},
-		'restrict' => $parsedJSON->{'restrict'},
-		'dom' => $parsedJSON->{'dom'},
-		'name' => $viewData->{'name'}
+		'name' => $parsedJSON->{'name'},
+		'_id' => $parsedJSON->{'_id'}
 	});
+
 	#my $viewId = $viewSaveReturn->{'_id'};
 	$self->app->log->debug("Controller: new view with id = ".$viewId);
 	my $viewReturn = $viewModel->get({'_id' => $viewId});
 	$self->render( json => $viewReturn );
 }
+
 sub edit {
 	my $self = shift;
 	my $viewId = $self->stash('viewid');
