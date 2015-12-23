@@ -611,6 +611,10 @@ li.multi_select:hover, li.popup:hover, li.reset_view:hover, li.reset_filter:hove
 	text-align:left;
 	float: left;
 }
+.ul_table {
+    margin:0;
+    padding: 0;
+}
 .sub_even_annot{
 	background:#B9BEFB;
 }

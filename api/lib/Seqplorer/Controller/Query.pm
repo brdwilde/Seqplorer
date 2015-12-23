@@ -139,7 +139,7 @@ sub submit {
 		for my $record (@$records){
 		
 
-			$self->app->log->debug('#### recordloop: record = '.Dumper($viewDoc,$record));#.' to be dearrayed with '.Dumper($viewDoc->{'queryarray'}));
+			#$self->app->log->debug('#### recordloop: record = '.Dumper($viewDoc,$record));#.' to be dearrayed with '.Dumper($viewDoc->{'queryarray'}));
 		
 
 			# for my $queryArrayKey ( keys %{$viewDoc->{'queryarray'}} ){
@@ -152,13 +152,42 @@ sub submit {
 			my $colIndex = 0;
 			for my $col ( @{$viewDoc->{'columns'}} ){
 				if ($col->{queryname}) {
-					if (ref($col->{queryname}) eq 'ARRAY'){
-						# this is a record field, get the values
-						my $values = $self->_getvals($record,$col->{queryname});
-						$row->[$colIndex]= $values;
+
+					#my %stash;
+					#%stash = %{$col->{'stash'}} if defined $col->{'stash'};
+					#delete $stash{'value'} if defined $stash{'value'};
+					#for my $stashKey (keys %stash){
+						#check if some stash values are references to other columns
+					#	if(ref($stash{$stashKey}) eq 'HASH' && defined $record->{$stash{$stashKey}}){
+					#		$stash{$stashKey}=$record->{$stash{$stashKey}};
+					#	}
+					#}
+					# if(defined $col->{'dotnotation'} && defined $record->{$col->{'dotnotation'}}){
+					# 	$stash{'value'} = $record->{$col->{'dotnotation'}};
+					# }
+					# if(!defined $col->{'template'} && defined $col->{'dotnotation'} ){
+					# 	if(defined $record->{$col->{'dotnotation'}} && ref($record->{$col->{'dotnotation'}}) eq 'ARRAY' ){
+					# 		$row->[$colIndex]= $viewModel->_applyTemplate({ 'name'=>'list' }, \%stash );
+					# 	}else{
+					# 		$row->[$colIndex]= $record->{$col->{'dotnotation'}} || '';
+					# 	}
+					# }else{
+					# 	$row->[$colIndex]= $viewModel->_applyTemplate($col->{'template'}, \%stash );
+					# }
+					
+					my %stash;
+					my $template = { 'name'=>'list' };
+					$template = $col->{template} if ($col->{template});
+					
+					# this is a record field, get the values
+					$stash{'value'} = $self->_getvals($record,$col->{queryname});
+					
+					if (ref($stash{'value'}) eq 'ARRAY'){
+						# multiple values render according to template
+						$row->[$colIndex]= $viewModel->_applyTemplate($template, \%stash );
 					} else {
-						# simple column value
-						$row->[$colIndex]= $record->{$col->{queryname}};
+						# simple column, no rendering
+						$row->[$colIndex]= $stash{'value'};
 					}
 				} else {
 					my $html = $col->{template};
@@ -172,30 +201,10 @@ sub submit {
 					# html column
 					$row->[$colIndex]= $html;
 				}
-				#$self->app->log->debug('col value = '.Dumper($col));
-				# my %stash;
-				# %stash = %{$col->{'stash'}} if defined $col->{'stash'};
-				# delete $stash{'value'} if defined $stash{'value'};
-				# for my $stashKey (keys %stash){
-				# 	#check if some stash values are references to other columns
-				# 	if(ref($stash{$stashKey}) eq 'HASH' && defined $record->{$stash{$stashKey}}){
-				# 		$stash{$stashKey}=$record->{$stash{$stashKey}};
-				# 	}
-				# }
-				# if(defined $col->{'dotnotation'} && defined $record->{$col->{'dotnotation'}}){
-				# 	$stash{'value'} = $record->{$col->{'dotnotation'}};
-				# }
-				# if(!defined $col->{'template'} && defined $col->{'dotnotation'} ){
-				# 	if(defined $record->{$col->{'dotnotation'}} && ref($record->{$col->{'dotnotation'}}) eq 'ARRAY' ){
-				# 		$row->[$colIndex]= $viewModel->_applyTemplate({ 'name'=>'list' }, \%stash );
-				# 	}else{
-				# 		$row->[$colIndex]= $record->{$col->{'dotnotation'}} || '';
-				# 	}
-				# }else{
-				# 	$row->[$colIndex]= $viewModel->_applyTemplate($col->{'template'}, \%stash );
-				# }
+
 				$colIndex++;
 			}
+			#$self->app->log->debug('row value = '.Dumper($row));
 			push @{$output->{'aaData'}}, $row;
 		}
 	}else{
@@ -229,7 +238,8 @@ sub _getvals{ #$record, $column
 	if (ref$record eq 'ARRAY'){
 		$return = [];
 		foreach my $rec (@$record) {
-			push @$return, $rec->{$key};
+			my $var = $rec->{$key} ? $rec->{$key} : '-';
+			push @$return, $var;
 		}
 	} else {
 		if (@keys > 0){
@@ -237,7 +247,7 @@ sub _getvals{ #$record, $column
 			$return = $self->_getvals($record->{$key},\@keys);
 		} else {
 			# last level, return the remaining record
-			$return = $record->{$key};
+			$return = $record->{$key} ? $record->{$key} : '-';
 		}
 	}
 	return $return;

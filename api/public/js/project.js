@@ -479,7 +479,7 @@ $(document).ready( function() {
 			//if (SEQPLORER.tables[table].oTable){
 				// the table exists
 				// Adjust header without full redraw (without backend request)
-				//SEQPLORER.tables[table].oTable.fnAdjustColumnSizing(false);
+				SEQPLORER.tables[table].oTable.fnAdjustColumnSizing(false);
 			//} else {
 				// table does not exist, draw it
 			//	_table_create(table);

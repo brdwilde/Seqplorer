@@ -49,10 +49,8 @@ function SEQPLORER(args){
 function select_object(type, id, name){
 
 	// add object to selected-array
-	console.log(type,id,name);
 	this[type][id] = name;
-	console.log(this[type]);
-
+	
 	// select the matching multi select checkboxes
 	var idstring = type+'id';
 	$('.multi_select').each(function() {

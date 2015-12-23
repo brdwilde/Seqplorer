@@ -87,7 +87,7 @@ sub get {
 					'classes' => ["ensembl","table_icon"],
 					'stashvars' => {"chromosome" => "c", "start" => "s", "end" => "e"},
 					'imagename' => "Ensembl.jpg"}),
-				"_id","b","c","karyo","s","e","v","va","vp","r","t","name",
+				"b","c","karyo","s","e","v","va","vp","r","t","name",
 				"sa.sn","sa.DP","sa.allelequal",
 				"tr.gene","tr.tr","tr.str","tr.cdnas","tr.con","tr.peps","tr.ppos","tr.pphe","tr.pphes","tr.sift","tr.sifts"
 		];
@@ -142,7 +142,6 @@ sub get {
 			    { "sName" => "Filename", "queryname" => [ "files", "file" ], "showable" => \0, "bVisible" => \0 },
 			    { "sName" => "Compression", "queryname" => [ "files", "compression" ], "bSortable" => \0  },
 			    { "sName" => "File host", "queryname" => [ "files", "host" ], "bSortable" => \0  },
-			    { "sName" => "Filetype", "queryname" => [ "files", "filetype" ], "showable" => \0, "bVisible" => \0, "bSortable" => \0  },
 			    { "sName" => "Username", "queryname" => [ "files", "user" ], "bSortable" => \0 },
 		    	_html_column({
 					'name' => "Edit",
@@ -198,9 +197,15 @@ sub get {
 	foreach my $col (keys %stashcolumns){
 		push (@$columns,{"queryname" => [$col], "showable" => \0, "bVisible" => \0 }) unless ($allcolumns{$col});
 	}
+	# now add all the mongoid columns to the view
+	if ($return->{'mongoid'}){
+		foreach my $col (@{$return->{'mongoid'}}){
+			my $colstring = join(".",@$col);
+			push (@$columns,{"queryname" => $col, "showable" => \0, "bVisible" => \0 }) unless ($allcolumns{$colstring} || $stashcolumns{$colstring});
+		}
+	}
+
 	# now remove the stashcolumns if the are already part of the columns
-
-
 	for my $column (@$columns) {
 		if (ref$column eq 'HASH') {
 			# this column element is fully encoded in the view record
@@ -367,7 +372,7 @@ sub _applyTemplate {
 	my $stashRef = shift || {};
 	my $templateString = '';
 	if(scalar(keys %{$stashRef}) < 1){
-		$self->app->log->debug('no values passed to template, returning empty string');
+		#$self->app->log->debug('no values passed to template, returning empty string');
 		return '';
 	}
 	if(ref($templateArg) eq 'HASH'){
@@ -383,7 +388,7 @@ sub _applyTemplate {
 	$mt ||= $cache->set($templateKey => Mojo::Template->new)->get($templateKey);
 	#$self->app->log->debug("Rendering with stash = ".Dumper($stashRef));
 	if($mt->compiled){
-		$self->app->log->debug("Rendering cached template with new stash values.");
+		#$self->app->log->debug("Rendering cached template with new stash values.");
 		$output = $mt->interpret(values %{$stashRef});
 	}else{
 		my $prepend='';
@@ -413,7 +418,7 @@ sub _getTemplate {
 	}elsif( $templateName eq 'mergecolumn'){
 		#has $value array and corresponding $mergevalue array
 		$output = <<'EOF';
-				  <ul>
+				  <ul class='ul_table'>
 					% my $i = 1;
 					% for my $val (@$value) {
 					% my $mVal = shift @$mergevalue;
@@ -425,7 +430,7 @@ sub _getTemplate {
 EOF
 	}elsif( $templateName eq 'object'){
 		$output = <<'EOF';
-			<ul>
+			<ul class='ul_table'>
 				% my $i = 1;
 				% for my $object (@$value) {
 				% my $class = $i % 2 ? 'sub_odd_sample' : 'sub_even_sample';
@@ -442,7 +447,7 @@ EOF
 EOF
 	}elsif( $templateName eq 'list'){
 		$output = <<'EOF';
-			<ul>
+			<ul class='ul_table'>
 				% my $i = 1;
 				% for my $line (@$value) {
 				% my $class = $i % 2 ? 'sub_odd_sample' : 'sub_even_sample';

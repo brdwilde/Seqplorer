@@ -116,25 +116,27 @@ sub fetch {
 			
 			# find the element we want to match the document elements to
 			# by descending into the where using the restrict array
-			$whererestrict = $self->_gethashbyarray($whererestrict,$restrict->{'restrict'});
+			$restrict->{'values'} = $self->_gethashbyarray($whererestrict,$restrict->{'restrict'});
+			#$self->app->log->debug('fetch: restrictionData = '.Dumper($whererestrict) );
 
 			# remove potential mongodb operators at this level
 			# mostly $in, $all,... at this level, only $in is relevant? # TODO: check this!
-			if (ref($whererestrict) eq "HASH"){
-				foreach my $key (keys %{$whererestrict}){
-					$restrict->{'values'} = [@{$whererestrict->{$key}}] if ($key =~ /^\$in/);
-				}
-			}elsif(ref($whererestrict) eq "ARRAY"){ #parent element must have been $all
-				#go over the diff $elemMatch object inside the $all
-				foreach my $allArrayEl (@{$whererestrict}){
-					if( defined $allArrayEl->{'$elemMatch'} ){
-						push @{$restrict->{'values'}}, $self->_gethashbyarray($allArrayEl->{'$elemMatch'},$restrict->{'restrict'});
-					}
-				}
-			}
+			# if (ref($whererestrict) eq "HASH"){
+			# 	foreach my $key (keys %{$whererestrict}){
+			# 		$restrict->{'values'} = [@{$whererestrict->{$key}}] if ($key =~ /^\$in/);
+			# 	}
+			# }elsif(ref($whererestrict) eq "ARRAY"){ #parent element must have been $all
+			# 	#go over the diff $elemMatch object inside the $all
+			# 	foreach my $allArrayEl (@{$whererestrict}){
+			# 		if( defined $allArrayEl->{'$elemMatch'} ){
+			# 			push @{$restrict->{'values'}}, $self->_gethashbyarray($allArrayEl->{'$elemMatch'},$restrict->{'restrict'});
+			# 		}
+			# 	}
+			# }
 			push @restrictionData, $restrict;
 		}
 	}
+	use Data::Dumper;
 	#$self->app->log->debug('fetch: restrictionData = '.Dumper(\@restrictionData) );
 	
 	#my @all;
@@ -352,11 +354,25 @@ sub _gethashbyarray{
 	my $hash = {%{$hashArg}};
 	my $array = shift;
 	#$self->app->log->debug('_gethashbyarray: array of type '.ref($array).', value = '.Dumper($array));
-	
+
+	if (ref($hash) eq "HASH"){
+		my @keys = keys($hash);
+		if ($keys[0] =~ /^\$/){
+			$hash = $hash->{$keys[0]};
+		} 
+	}
+
 	# we descend into the hash using the array values as keys
 	foreach my $key (@{$array}){
 		if (defined($hash->{$key})){
-			if (ref($hash->{$key}) eq "HASH" || ref($hash->{$key}) eq "ARRAY"){
+			if (ref($hash->{$key}) eq "HASH"){
+				my @keys = keys($hash->{$key});
+				if ($keys[0] =~ /^\$/){
+					$hash = $hash->{$key}->{$keys[0]};
+				} else {
+					$hash = $hash->{$key};
+				}
+			} elsif (ref($hash->{$key}) eq "ARRAY"){
 				$hash = $hash->{$key}; # set the value attached to the key of the hash to be the new hash
 			}
 		}
