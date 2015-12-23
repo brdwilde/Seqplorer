@@ -75,14 +75,15 @@ sub get {
 				_html_column({
 					'name' => "View IGV",
 					'type' => "link",
-					'link' => "http://localhost:60151/goto?locus=<%%= \$chromosome %>:<%%= \$start %>-<%%= \$end %>",
+					'link' => "http://localhost:60151/goto?locus=<%c%>:<%s%>-<%e%>",
 					'classes' => ["igv","table_icon"],
 					'stashvars' => {"chromosome" => "c", "start" => "s", "end" => "e"},
 					'imagename' => "IGV_32.png"}),
 				_html_column({
-					'name' => "Detail",
+					'name' => "Ensembl",
 					'type' => "link",
-					'link' => "http://www.ensembl.org/Homo_sapiens/Location/Overview?r=<%%= \$chromosome %>:<%%= \$start %>-<%%= \$end %>",
+					'link' => "http://www.ensembl.org/Homo_sapiens/Location/Overview?r=<%c%>:<%s%>-<%e%>",
+					'target' => "_blank",
 					'classes' => ["ensembl","table_icon"],
 					'stashvars' => {"chromosome" => "c", "start" => "s", "end" => "e"},
 					'imagename' => "Ensembl.jpg"}),
@@ -122,39 +123,39 @@ sub get {
 					'type' => "img",
 					'classes' => ["pane"],
 					'atributes' => { 'showtable' =>'variants'},
-					'stashvars' => {"samplesid" => "_id", "samplessname"=>"name"},
+					'stashvars' => {"samplesid" => "_id", "samplesname"=>"name"},
 					'imagename' => "details_open.png"}),
 				 _html_column({
 					'name' => "Select",
 					'type' => "checkbox",
 					'classes' => ["multi_select"],
-					'stashvars' => {"samplesid" => "_id", "samplessname"=>"name"}}),
+					'stashvars' => {"samplesid" => "_id", "samplesname"=>"name"}}),
 			    { "sName" => "ID", "queryname" => [ "_id" ], "showable" => \0, "bVisible" => \0 },
 			    { "sName" => "Name", "queryname" => [ "name" ], "sorting" => \1 },
 			    { "sName" => "Description", "queryname" => [ "description" ] },
 			    { "sName" => "Genomebuild", "queryname" => [ "genome" ] },
 			    { "sName" => "Project", "queryname" => [ "project", "name" ], "template" => { "name" => "concat", "option" => "\/" }, "bSortable" => \0 },
 			    { "sName" => "Project ID", "queryname" => [ "project", "id" ], "showable" => \0, "bVisible" => \0 },
-			    { "sName" => "File name", "queryname" => [ "files", "name" ] },
-			    { "sName" => "File type", "queryname" => [ "files", "filetype" ] },
-			    { "sName" => "File location", "queryname" => [ "files", "type" ] },
+			    { "sName" => "File name", "queryname" => [ "files", "name" ], "bSortable" => \0  },
+			    { "sName" => "File type", "queryname" => [ "files", "filetype" ], "bSortable" => \0  },
+			    { "sName" => "File location", "queryname" => [ "files", "type" ], "bSortable" => \0  },
 			    { "sName" => "Filename", "queryname" => [ "files", "file" ], "showable" => \0, "bVisible" => \0 },
-			    { "sName" => "Compression", "queryname" => [ "files", "compression" ] },
-			    { "sName" => "File host", "queryname" => [ "files", "host" ], "showable" => \0, "bVisible" => \0 },
-			    { "sName" => "Filetype", "queryname" => [ "files", "filetype" ], "showable" => \0, "bVisible" => \0 },
-			    { "sName" => "Username", "queryname" => [ "files", "user" ] },
+			    { "sName" => "Compression", "queryname" => [ "files", "compression" ], "bSortable" => \0  },
+			    { "sName" => "File host", "queryname" => [ "files", "host" ], "bSortable" => \0  },
+			    { "sName" => "Filetype", "queryname" => [ "files", "filetype" ], "showable" => \0, "bVisible" => \0, "bSortable" => \0  },
+			    { "sName" => "Username", "queryname" => [ "files", "user" ], "bSortable" => \0 },
 		    	_html_column({
 					'name' => "Edit",
 					'type' => "img",
-					'classes' => ["resample","table_icon","need_projects"],
-					'atributes' => { 'action' => 'rename_remove_sample'},
+					'classes' => ["resample","table_icon"],
+					'atributes' => { 'action' => 'edit_sample'},
 					'stashvars' => {"sampleid" => "_id", "samplesname"=>"name"},
 					'imagename' => "edit.png"}),
 		    	_html_column({
-					'name' => "View",
+					'name' => "Delete",
 					'type' => "img",
 					'classes' => ["resample","table_icon"],
-					'atributes' => { 'action' => 'rename_remove_sample', 'del' => 'yes'},
+					'atributes' => { 'action' => 'remove_sample'},
 					'stashvars' => {"sampleid" => "_id", "samplesname"=>"name"},
 					'imagename' => "cancel.png"}),
 			];
@@ -232,6 +233,7 @@ sub get {
 
 					$element->{'values'} = $uniqueDoc->{'values'} if $uniqueDoc->{'values'} && ref($uniqueDoc->{'values'}[0]) ne 'ARRAY';
 					$element->{'showable'} = \0 if $uniqueDoc->{'type'} eq 'mongo_id';
+					$element->{'bVisible'} = \0 if $uniqueDoc->{'type'} eq 'mongo_id';
 					#$column->{'searchtype'}=$uniqueDoc->{'type'};
 					#if(defined $uniqueDoc->{'values'} && scalar(@{$uniqueDoc->{'values'}}) > 1 ){
 					# 	$column->{'list'}=$uniqueDoc->{'values'};
@@ -302,6 +304,7 @@ sub _html_column {
 	my $name = $args->{'name'};
 	my $type = $args->{'type'};
 	my $link = $args->{'link'};
+	my $target = $args->{'target'};
 	my $classes = $args->{'classes'};
 	my $atributes = $args->{'atributes'};
 	my $stashvars = $args->{'stashvars'};
@@ -311,7 +314,9 @@ sub _html_column {
 	my $stash;
 
 	if ($type eq 'link'){
-		$html .= "<a href='".$link."'>";
+		$html .= "<a href='".$link."'";
+		$html .= " target='".$target."'" if $target;
+		$html .=">";
 	}
     if ($type eq 'img' || $imagename){
     	$html .= "<img src='img\/".$imagename."' ";
@@ -322,7 +327,7 @@ sub _html_column {
     if ($classes){
     	$html .= "class='";
     	foreach my $class (@$classes){
-    		$html .= $class;
+    		$html .= $class." ";
     	}
     	$html .= "' ";
     }

@@ -97,7 +97,8 @@ $(document).ready( function() {
 			SEQPLORER.deselect_object_all('samples');
 			var samples = eval('(' + $(this).attr('samples') + ')');
 			$.each(samples, function (index, value){
-				SEQPLORER.select_object(value, 'samples');
+				console.log("TODO update function");
+				SEQPLORER.select_object('samples', value);
 			});
 			$("#table_variants").appendTo("#accordion > div:last-of-type");
 			$("#only_variants").hide();
@@ -419,7 +420,7 @@ $(document).ready( function() {
 	});
 
 	$("body").on("change", ".load_view", function(){
-		console.log($(this).val());
+		//console.log($(this).val());
 	});
 
 	// // Create sortable for views
@@ -475,47 +476,45 @@ $(document).ready( function() {
 		if ($(this).attr("showtable")){
 			// the user has requested us to display this table
 			var table = $(this).attr("showtable");
-			if (SEQPLORER.tables[table].oTable){
+			//if (SEQPLORER.tables[table].oTable){
 				// the table exists
 				// Adjust header without full redraw (without backend request)
-				SEQPLORER.tables[table].oTable.fnAdjustColumnSizing(false);
-			} else {
+				//SEQPLORER.tables[table].oTable.fnAdjustColumnSizing(false);
+			//} else {
 				// table does not exist, draw it
-				_table_create(table);
-			}
+			//	_table_create(table);
+			//}
 			// select the accordion the table is in
 			$( "#accordion").accordion( "option","active", SEQPLORER.accordion[table] );
 		}
 		if ($(this).attr("samplesid")){
 			// change the selected sample and redraw the variants table
 			SEQPLORER.deselect_object_all('samples');
-			SEQPLORER.select_object($(this).attr("samplesid"), 'samples');
+			SEQPLORER.select_object('samples',$(this).attr("samplesid"),$(this).attr("samplesname"));
 			_table_create('variants');
 		}
 		if ($(this).attr("projectsid")){
 			// change the selected project and redraw the samples table
 			SEQPLORER.deselect_object_all('projects');
-			SEQPLORER.select_object($(this).attr("projectsid"), 'projects');
+			SEQPLORER.select_object('projects',$(this).attr("projectsid"),$(this).attr("projectsname"));
 			//$('a.advanced_filtering').attr('projectsid',JSON.stringify(SEQPLORER.projects));
 			if (!$(this).attr("samplesid")){
 				SEQPLORER.deselect_object_all('samples');
 			}
+			// redraw table
 			_table_create('samples');
 		}
-		if ($(this).attr("group_ids")){
-			// change the selected group and redraw the projects table
-			if (!$(this).attr("samplesid")){
-				SEQPLORER.deselect_object_all('variants');
-			}
-			if (!$(this).attr("projectid")){
-				SEQPLORER.deselect_object_all('samples');
-			}
-			_table_create('projects');
-		}
+		// if ($(this).attr("group_ids")){
+		// 	// change the selected group and redraw the projects table
+		// 	if (!$(this).attr("samplesid")){
+		// 		SEQPLORER.deselect_object_all('variants');
+		// 	}
+		// 	if (!$(this).attr("projectid")){
+		// 		SEQPLORER.deselect_object_all('samples');
+		// 	}
+		// 	_table_create('projects');
+		// }
 		SEQPLORER.multi_select_all();
-		$(".need_samples").attr('samplesid', JSON.stringify(SEQPLORER.samples));
-		$(".need_projects").attr('projectsid', JSON.stringify(SEQPLORER.projects));
-		$(".add_sample").attr('projectsid', SEQPLORER.projects);
 		return false;
 	});
 
@@ -556,7 +555,7 @@ $(document).ready( function() {
 				if ($(this).attr("samplesid")){
 					if (action == 'select_all'){
 						if ($.inArray($(this).attr("samplesid"), SEQPLORER.samples) == -1) {
-							SEQPLORER.select_object($(this).attr("samplesid"), 'samples');
+							SEQPLORER.select_object('samples', $(this).attr("samplesid"), $(this).attr("samplesname"));
 						}
 					} else if (action == 'select_none') {
 						SEQPLORER.deselect_object($(this).attr("samplesid"), 'samples');
@@ -564,7 +563,7 @@ $(document).ready( function() {
 						if ($(this).prop('checked')){
 							SEQPLORER.deselect_object($(this).attr("samplesid"), 'samples');
 						} else {
-							SEQPLORER.select_object($(this).attr("samplesid"), 'samples');
+							SEQPLORER.select_object('samples', $(this).attr("samplesid"), $(this).attr("samplesname"));
 						}
 					}
 					table = 'variants';
@@ -572,7 +571,7 @@ $(document).ready( function() {
 				if ($(this).attr("projectsid")){
 					if (action == 'select_all'){
 						if ($.inArray($(this).attr("projectsid"), SEQPLORER.projects) == -1) {
-							SEQPLORER.select_object($(this).attr("projectsid"), 'projects');
+							SEQPLORER.select_object('projects', $(this).attr("projectsid"), $(this).attr("projectsname"));
 						}
 					} else if (action == 'select_none') {
 						SEQPLORER.deselect_object($(this).attr("projectsid"), 'projects');
@@ -580,7 +579,7 @@ $(document).ready( function() {
 						if ($(this).prop('checked')){
 							SEQPLORER.deselect_object($(this).attr("projectsid"), 'projects');
 						} else {
-							SEQPLORER.select_object($(this).attr("projectsid"), 'projects');
+							SEQPLORER.select_object('projects', $(this).attr("projectsid"), $(this).attr("projectsname"));
 						}
 					}
 					table = 'samples';
@@ -594,7 +593,7 @@ $(document).ready( function() {
 		else {
 			if ($(this).attr("samplesid")){
 				if ($(this).prop('checked')){
-					SEQPLORER.select_object($(this).attr("samplesid"), 'samples');
+					SEQPLORER.select_object('samples', $(this).attr("samplesid"), $(this).attr("samplesname") );
 				} else {
 					SEQPLORER.deselect_object($(this).attr("samplesid"), 'samples');
 				}
@@ -603,7 +602,7 @@ $(document).ready( function() {
 			}
 			if ($(this).attr("projectsid")){
 				if ($(this).prop('checked')){
-					SEQPLORER.select_object($(this).attr("projectsid"), 'projects');
+					SEQPLORER.select_object('projects', $(this).attr("projectsid"), $(this).attr("projectsname") );
 				} else {
 					SEQPLORER.deselect_object($(this).attr("projectsid"), 'projects');
 				}
@@ -611,9 +610,6 @@ $(document).ready( function() {
 				$("#samples_header").parents('h3').effect("highlight", { "color":"#22222D" }, 500);
 			}
 		}
-		$(".need_samples").attr('samplesid', JSON.stringify(SEQPLORER.samples));
-		$(".need_projects").attr('projectsid', JSON.stringify(SEQPLORER.projects));
-		$(".add_sample").attr('projectsid', JSON.stringify(SEQPLORER.projects));
 	});
 
 	// TODO: Visible records sorting
@@ -675,44 +671,44 @@ $(document).ready( function() {
 	});
 
 	// Link to IGV
-	$("body").on("click", ".igv", function(){
-		var data = {};
-		data.type = 'igv';			
+	// $("body").on("click", ".igv", function(){
+	// 	var data = {};
+	// 	data.type = 'igv';			
 
-		if ($(this).attr('start')){
-			var chr = $(this).attr('chromosome');
-			var start = $(this).attr('start');
+	// 	if ($(this).attr('start')){
+	// 		var chr = $(this).attr('chromosome');
+	// 		var start = $(this).attr('start');
 
-			appRequest(60151, '', '', 'true', 'chr'+chr+':'+start, '');
-		}
-		else if ($(this).attr('samplesid') && $(this).attr('samplesid') != "[]") {
-			data.samples_id = $(this).attr('samplesid');
-			$.post(
-				SEQPLORER.phpforms_url,
-				data,
-				function(responseText){
-					var form = "<a id='hidediv' href=''><img class='cancel_popup' src='img/back.png'></img></a>"+responseText;
-					$('#showhide').html(form);
-				}
-				);
-			$('#showhide').fadeIn('slow');
-		}
-		else {
-			var responseText = "You haven't selected any samples. Please select one or more to use IGV.";
-			var form = "<a id='hidediv' href=''><img class='cancel_popup' src='img/back.png'></img></a>"+responseText;
-			$('#showhide').html(form);
-			$('#showhide').fadeIn('slow');
-		}
-		return false;
-	});
+	// 		//appRequest(60151, '', '', 'true', 'chr'+chr+':'+start, '');
+	// 	}
+	// 	else if ($(this).attr('samplesid') && $(this).attr('samplesid') != "[]") {
+	// 		data.samples_id = $(this).attr('samplesid');
+	// 		$.post(
+	// 			SEQPLORER.phpforms_url,
+	// 			data,
+	// 			function(responseText){
+	// 				var form = "<a id='hidediv' href=''><img class='cancel_popup' src='img/back.png'></img></a>"+responseText;
+	// 				$('#showhide').html(form);
+	// 			}
+	// 			);
+	// 		$('#showhide').fadeIn('slow');
+	// 	}
+	// 	else {
+	// 		var responseText = "You haven't selected any samples. Please select one or more to use IGV.";
+	// 		var form = "<a id='hidediv' href=''><img class='cancel_popup' src='img/back.png'></img></a>"+responseText;
+	// 		$('#showhide').html(form);
+	// 		$('#showhide').fadeIn('slow');
+	// 	}
+	// 	return false;
+	// });
 
 	// Link to Ensembl
-	$("body").on("click", ".ensembl", function(){
-		var chr = $(this).attr('chromosome');
-		var start = $(this).attr('start');
-		var end = $(this).attr('end');
-		window.open('http://www.ensembl.org/Homo_sapiens/Location/Overview?r='+chr+':'+start+'-'+end);
-	});
+	// $("body").on("click", ".ensembl", function(){
+	// 	var chr = $(this).attr('chromosome');
+	// 	var start = $(this).attr('start');
+	// 	var end = $(this).attr('end');
+	// 	window.open('http://www.ensembl.org/Homo_sapiens/Location/Overview?r='+chr+':'+start+'-'+end);
+	// });
 
 	// Export table
 	// TODO: review code and test
@@ -1067,8 +1063,6 @@ $(document).ready( function() {
 		if ($(this).attr('prefix')){
 			var prefix = '_'+$(this).attr('prefix')+'_'; 
 		}
-		console.log(prefix);
-		console.log(counter);
 		var j = 1;
 		while ($('#filter_column'+prefix+(counter-j)+'_chosen').length === 0){
 			j++;
@@ -1308,14 +1302,12 @@ function _table_build(table) {
 		// Send additional data to backend
 		"fnServerData": function ( sSource, aoData, fnCallback ) {
 			var where = SEQPLORER.build_query(table);
-			console.log(where);
 			aoData.push(
 				{"name": "collection", "value": table },
 				{"name": "view", "value": SEQPLORER.tables[table].view },
 				{"name": "where", "value": JSON.stringify(where) },
 				{"name": "advanced_filter", "value": JSON.stringify(SEQPLORER.tables[table].filter) }
 			);
-			console.log(aoData);
 			$.ajax( {
 				"dataType": 'json',
 				"type": "POST",
@@ -1478,8 +1470,6 @@ function applyView (name, view_id) {
 }
 
 function showPlot(title, link){
-	console.log(title);
-	console.log(link);
 	var width = $(window).width()*0.90;
 	var height = $(window).height()*0.70;
 	var content = "<a id='hidediv' href=''><img class='cancel_popup' src='img/back.png'></img></a><p class='plot_title'>"+title+"</p>";

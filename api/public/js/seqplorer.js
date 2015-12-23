@@ -3,20 +3,20 @@
  */
 function SEQPLORER(args){
 	// get argurments from JSON-string
-	this.user					= args.user;
-	this.all_projects			= args.all_projects;
-	this.all_samples			= args.all_samples;
+	//this.user					= args.user;
+	//this.all_projects			= args.all_projects;
+	//this.all_samples			= args.all_samples;
 	// selected projects-array
-	this.projects				= [];
+	this.projects				= undefined;
+	this.samples				= undefined;
 	this.select_object			= select_object;
 	this.deselect_object		= deselect_object;
 	this.deselect_object_all	= deselect_object_all;
 	this.multi_select_all		= multi_select_all;
 	// selected samples-array
-	this.samples				= [];
-	this.require				= [];
-	this.exclude				= [];
-	this.copy_sample			= copy_sample;
+	//this.require				= [];
+	//this.exclude				= [];
+	//this.copy_sample			= copy_sample;
 	// datatables table-objects
 	this.tables					= {
 		'samples' : { 'view' : 'samples', 'name' : 'samples', 'collection' : 'samples' },
@@ -46,13 +46,15 @@ function SEQPLORER(args){
  *	Add an object to the selected-array
  *	Usage: SEQPLORER.select_object('4bfa81198cf5fc1002a42b90', 'projects');
  */
-function select_object(id, type){
-	var all = 'all_'+type;
-	var idstring = type+'id';
+function select_object(type, id, name){
 
 	// add object to selected-array
-	this[type].push(id);
+	console.log(type,id,name);
+	this[type][id] = name;
+	console.log(this[type]);
 
+	// select the matching multi select checkboxes
+	var idstring = type+'id';
 	$('.multi_select').each(function() {
 		if ($(this).attr(idstring) == id){
 			$(this).prop('checked', true);
@@ -67,22 +69,10 @@ function select_object(id, type){
  *	Usage: SEQPLORER.deselect_object('4bfa81198cf5fc1002a42b91', 'samples');
  */
 function deselect_object(id, type){
-	var all = 'all_'+type;
-	var idstring = type+'id';
-	// remove object from selected-array
-	this[type] = jQuery.grep(this[type], function(value) {
-		return value != id;
-	});
-	// sample-> object-id needs to be removed from require/exclude-array
-	if (type == 'samples'){
-		this.require = jQuery.grep(this.require, function(value) {
-			return value != id;
-		});
-		this.exclude = jQuery.grep(this.exclude, function(value) {
-			return value != id;
-		});
-	}
 
+	delete this[type][id];
+
+	var idstring = type+'id';
 	$('.multi_select').each(function() {
 		if ($(this).attr(idstring) == id){
 			$(this).prop('checked', false);
@@ -90,32 +80,28 @@ function deselect_object(id, type){
 	});
 
 	// update the headers
-	this.update_header(type);
+	this.update_header(type,'');
 }
 /*
  *	Remove an object from the selected-array
  *	Usage: SEQPLORER.deselect_object_all('samples');
  */
 function deselect_object_all(type){
-	var idstring = type+'id';
 	// remove object from selected-array
 	this[type] = [];
 
-	if (type == 'samples'){
-		this.require = [];
-		this.exclude = [];
-	}
-
+	// set mathching multi_select elements to unchecked
+	var idstring = type+'id';
 	$('.multi_select').each(function() {
 		if ($(this).attr(idstring)){
 			$(this).prop('checked', false);
 		}
 	});
+
 	// update the headers
 	var header_selector = '#'+type+'_header';
-	var header = type.charAt(0).toUpperCase() + type.slice(1)+':';
+	var header = type.charAt(0).toUpperCase() + type.slice(1)+':'; // create header name from type with first letter capital
 	$(header_selector).html(header);
-
 }
 /*
  *	Make sure all multi_select elements are consistent with the SEQPLORER object
@@ -125,22 +111,16 @@ function multi_select_all(){
 	var samples = this.samples;
 	var projects = this.projects;
 	$('.multi_select').each(function() {
-		if ($.inArray($(this).attr('samplesid'), samples) > -1){
+		if ($(this).attr('samplesid') in samples){
 			$(this).prop('checked', true);
-		} else if ($.inArray($(this).attr('projectsid'), projects) > -1){
+		} else if ($(this).attr('projectsid') in projects){
 			$(this).prop('checked', true);
+		} else {
+			$(this).prop('checked', false);
 		}
 	});
 }
-/*
- *	Switch an object from one array to another
- *	Usage: SEQPLORER. copy_sample('4bfa81198cf5fc1002a42b91','required');
- */
-function copy_sample(id,to){
-	this[to].push(this['all_samples'][id]['_id']['$id']);
 
-	this.update_header('samples');
-}
 /*
  *	Set value's of the table object
  *	Usage: SEQPLORER.set_table_value('variants', 'columns', 'columnsobject');
@@ -153,76 +133,24 @@ function set_table_value(table, key, value){
  *	Usage: SEQPLORER.build_query('samples');
  */
 function build_query(table){
-	var where = {};
-	if (table == 'projects') {
-		// create needed empty object(s) and array(s)
-		where['groups'] = {
-			'id' : {
-				'$in' : []
-			}
-		};
-		var groupurl = 'group';
-		if (this.userid) {
-			groupurl = groupurl+'/'+this.userid ;
-		}
-		$.get(
-			groupurl,
-			function(responseText){
-				where['groups']['id']['$in'] = responseText['groupids'];
-			}
-		);
-		//console.log(where);
-	}
+	var where = [];
+
 	if (table == 'samples') {
-		if (this.projects.length){
+		if (typeof(this.projects) === 'object'){
 			// create needed empty object(s) and array(s)
-			where['project'] = {
-				'id' : {
-					'$in' : []
-				}
+			for (var key in this.projects) {
+				where.push(key);
 			};
-			$.each(this.projects, function(key, val){
-				where['project']['id']['$in'].push(val);
-			});
 		}
 	}
 	if (table == 'variants' || table == 'only_variants') {
-		if (this.samples.length){
+		if (typeof(this.samples) === 'object'){
 			// create needed empty object(s) and array(s)
-			where['sa'] = {
-				'id' : {
-					'$in' : []
-				}
+			for (var key in this.samples) {
+				where.push(key);
 			};
-			// add selected samples to where-array
-			$.each(this.samples, function(key, val){
-				where['sa']['id']['$in'].push(val);
-			});
-		}
-		// add required samples to where-array
-		if (this.require.length){
-			where['sa.id'] = {
-				'$all' : []
-			};
-			$.each(this.require, function(key, val){
-						where['sa.id']['$all'].push(val);
-			});
-		}
-		if (this.exclude.length){
-			if (where.hasOwnProperty("sa.id")){
-				where['sa.id']['$nin'] = [];
-			} else {
-				where['sa.id'] = {
-					'$nin' : []
-				};
-			}
-			// add excluded samples to where-array
-			$.each(this.exclude, function(key, val){
-						where['sa.id']['$nin'].push(val);
-			});
 		}
 	}
-
 	// put where-array in query
 	return (where);
 }
@@ -231,24 +159,17 @@ function build_query(table){
  *	Usage: SEQPLORER.update_header('samples');
  */
 function update_header(type){
-	var all = 'all_'+type;
+	//var all = 'all_'+type;
 
 	// update the headers
 	var header_selector = '#'+type+'_header';
 	var header = type.charAt(0).toUpperCase() + type.slice(1)+':<i> ';
-	var this_all = this[all];
-	$.each(this[type], function(index, value) {
-		header += this_all[value]['name']+' - ';
-	});
-	if (type == 'samples'){
-		$.each(this.require, function(index, value) {
-			header = header.replace(" "+this_all[value]['name']+" ", ' <font color="green">'+this_all[value]['name']+'</font> ');
-		});
-		$.each(this.exclude, function(index, value) {
-			header = header.replace(" "+this_all[value]['name']+" ", ' <font color="red">'+this_all[value]['name']+'</font> ');
-		});
-	}
-	this[all] = this_all;
+
+	for (var key in this[type]) {
+		header += this[type][key]+' - ';
+	};
+
+	// chop off trailing -
 	if (header.lastIndexOf("-") == -1){
 		header = header.substr(0,header.length-4);
 	}

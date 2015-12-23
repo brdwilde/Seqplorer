@@ -8,6 +8,7 @@ use Mojo::JSON;
 use Carp qw/croak/;
 use Mojo::JSON 'j';
 use Mango::BSON ':bson';
+use Mango::BSON::ObjectID;
 use Mojo::Util qw(encode md5_sum);
 
 has [qw/ app mongoDB /];
@@ -32,7 +33,7 @@ sub count {
 	#	$cache->set($cacheKey, $countVal);
 	#	return $countVal;
 	#}
-	$self->app->log->debug('count: in collection '.$collection.' and where = '.Dumper($whereRef));
+	#$self->app->log->debug('count: in collection '.$collection.' and where = '.Dumper($whereRef));
 	# Perform new count and safe to mongo
 	my $countCursor = $self->mongoDB->db->collection($collection)->find( $whereRef );
 	my $count=$countCursor->count();#sub {
@@ -199,87 +200,86 @@ sub add_elementMatch {
 	}
 	return \%subjectsRef;
 }
-sub parseSampleList {
-	my $self = shift;
-	my $where= shift;
-	my %sa;
-	use Data::Dumper;
-	my @sampleList=@{$where->{'sampleList'}};
-	#if(defined $where->{'sa'}){
-	#	%sa=%{$where->{'sa'}};
-	#}
-	my @whereSa;# will go here { 'sa' => { '$all' => [ *insert* ] }} 
-	#generate $elemMatch objects for each sample that needs to be checked
-	if(scalar(@sampleList) < 1 ){ 
-		# do nothing no sample specific stuff needed
-	}elsif(scalar(@sampleList) == 1 ){ 
-		my $sample;
-		# search same on all samples
-		$sample = $self->add_mongoid($sampleList[0], [['id']]);
-		$where->{'sa'} = { '$elemMatch' =>  $sample };
-	}else{
-		# diff search criteria for multiple samples
-		for my $sample (@sampleList) {
-			$sample = $self->add_mongoid($sample, [['id']]);
-			push @whereSa, { '$elemMatch' => $sample };
-		}
-		$where->{'sa'}={ '$all' => \@whereSa }
-	}
-	#for my $saKeys (keys %sa) {
-	#	$where->{'sa'}{$saKeys}=$sa{$saKeys};
-	#}
-	delete $where->{'sampleList'};
-	return $where;
-}
-sub add_mongoid {
-	my $self = shift;
-	my $subjectsArg = shift;
-	$self->app->log->debug('add_mongoid: subjectsArg = '.Dumper($subjectsArg));
-	my $subjectsType = ref($subjectsArg);
-	croak 'Subjects passed to add_mongoid needs to be reference of an array or hash' unless ($subjectsType);
-	my %subjectsRef= %{$subjectsArg};
-	use Mango::BSON::ObjectID;
-	my $arg = shift;
-	return \%subjectsRef unless(defined $arg);
-	my @mongoids = @{ $arg };
-	my %mongoOper = map { $_ => 1 } ('$in','$all','$nin');
-	MATCHES:
-	for my $matches (@mongoids) {
-		$self->app->log->debug("### checking ".join('.',@$matches));
-		my $i=-1;
-		my $j=0;
-		my $tmpSubjectsRef = \%subjectsRef;
-		for my $match (@$matches) {
-			$i++;
-			if( defined $tmpSubjectsRef->{$match} ){
-				$self->app->log->debug("match for ".join('.',@$matches)." now at $match");
-				if( $i == $#$matches ){
-					my $val = $tmpSubjectsRef->{$match};
-					if (ref($val) eq "HASH") {
-						$self->app->log->debug("last el matched is hash");
-						for my $matchOperKey ( grep defined($mongoOper{$_}), keys %$val) {
-							$self->app->log->debug("oper with array of ids");
-							my $length = @{$val->{$matchOperKey}};
-							foreach (my $i=0; $i<$length; $i++){ # for each operater we replace all values in it
-								$val->{$matchOperKey}->[$i] = Mango::BSON::ObjectID->new($val->{$matchOperKey}->[$i]);
-							}
-						}
-						$tmpSubjectsRef->{$match}=$val;
-					} else {
-						$self->app->log->debug("simple id");
-						# replace the value by its mongo object id
-						$tmpSubjectsRef->{$match}=Mango::BSON::ObjectID->new($val);
-					}
-					$val = undef;
-				}else{
-					$tmpSubjectsRef = $tmpSubjectsRef->{$match};
-				}
-			}
-			$j++;
-		}
-	}
-	return \%subjectsRef;
-}
+# sub parseSampleList {
+# 	my $self = shift;
+# 	my $where= shift;
+# 	my %sa;
+# 	use Data::Dumper;
+# 	my @sampleList=@{$where->{'sampleList'}};
+# 	#if(defined $where->{'sa'}){
+# 	#	%sa=%{$where->{'sa'}};
+# 	#}
+# 	my @whereSa;# will go here { 'sa' => { '$all' => [ *insert* ] }} 
+# 	#generate $elemMatch objects for each sample that needs to be checked
+# 	if(scalar(@sampleList) < 1 ){ 
+# 		# do nothing no sample specific stuff needed
+# 	}elsif(scalar(@sampleList) == 1 ){ 
+# 		my $sample;
+# 		# search same on all samples
+# 		$sample = $self->add_mongoid($sampleList[0], [['id']]);
+# 		$where->{'sa'} = { '$elemMatch' =>  $sample };
+# 	}else{
+# 		# diff search criteria for multiple samples
+# 		for my $sample (@sampleList) {
+# 			$sample = $self->add_mongoid($sample, [['id']]);
+# 			push @whereSa, { '$elemMatch' => $sample };
+# 		}
+# 		$where->{'sa'}={ '$all' => \@whereSa }
+# 	}
+# 	#for my $saKeys (keys %sa) {
+# 	#	$where->{'sa'}{$saKeys}=$sa{$saKeys};
+# 	#}
+# 	delete $where->{'sampleList'};
+# 	return $where;
+# }
+# sub add_mongoid {
+# 	my $self = shift;
+# 	my $subjectsArg = shift;
+# 	$self->app->log->debug('add_mongoid: subjectsArg = '.Dumper($subjectsArg));
+# 	my $subjectsType = ref($subjectsArg);
+# 	croak 'Subjects passed to add_mongoid needs to be reference of an array or hash' unless ($subjectsType);
+# 	my %subjectsRef= %{$subjectsArg};
+# 	my $arg = shift;
+# 	return \%subjectsRef unless(defined $arg);
+# 	my @mongoids = @{ $arg };
+# 	my %mongoOper = map { $_ => 1 } ('$in','$all','$nin');
+# 	MATCHES:
+# 	for my $matches (@mongoids) {
+# 		$self->app->log->debug("### checking ".join('.',@$matches));
+# 		my $i=-1;
+# 		my $j=0;
+# 		my $tmpSubjectsRef = \%subjectsRef;
+# 		for my $match (@$matches) {
+# 			$i++;
+# 			if( defined $tmpSubjectsRef->{$match} ){
+# 				$self->app->log->debug("match for ".join('.',@$matches)." now at $match");
+# 				if( $i == $#$matches ){
+# 					my $val = $tmpSubjectsRef->{$match};
+# 					if (ref($val) eq "HASH") {
+# 						$self->app->log->debug("last el matched is hash");
+# 						for my $matchOperKey ( grep defined($mongoOper{$_}), keys %$val) {
+# 							$self->app->log->debug("oper with array of ids");
+# 							my $length = @{$val->{$matchOperKey}};
+# 							foreach (my $i=0; $i<$length; $i++){ # for each operater we replace all values in it
+# 								$val->{$matchOperKey}->[$i] = Mango::BSON::ObjectID->new($val->{$matchOperKey}->[$i]);
+# 							}
+# 						}
+# 						$tmpSubjectsRef->{$match}=$val;
+# 					} else {
+# 						$self->app->log->debug("simple id");
+# 						# replace the value by its mongo object id
+# 						$tmpSubjectsRef->{$match}=Mango::BSON::ObjectID->new($val);
+# 					}
+# 					$val = undef;
+# 				}else{
+# 					$tmpSubjectsRef = $tmpSubjectsRef->{$match};
+# 				}
+# 			}
+# 			$j++;
+# 		}
+# 	}
+# 	return \%subjectsRef;
+# }
 
 sub object2dotnotation{
 	my $self = shift;
@@ -341,7 +341,6 @@ sub object2dotnotation{
 		$return->{'return'} = $valueArg;
 		$return->{'dotkey'} = $dotkey;
 	}
-
 	return ($return->{'return'},$return->{'dotkey'});
 }
 
