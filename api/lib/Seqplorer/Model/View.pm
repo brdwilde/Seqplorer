@@ -333,7 +333,7 @@ sub _html_column {
     }
     if ($stashvars){
     	foreach my $key (keys %$stashvars){
-	    	$html .= $key."='<%%= \$".$stashvars->{$key}." %>' ";
+	    	$html .= $key."='<%".$stashvars->{$key}."%>' ";
     	}
     }
     $html .= "title='".$name."'\/>";

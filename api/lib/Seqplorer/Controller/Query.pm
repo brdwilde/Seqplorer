@@ -36,14 +36,11 @@ sub submit {
 	my $fields;
 	my $viewModel = $self->model('view');
 	my $viewDoc = $viewModel->get({'_id' => $viewId});
-	$self->app->log->debug("View response: ".Dumper($viewDoc));
+	#$self->app->log->debug("View response: ".Dumper($viewDoc));
 	foreach my $column (@{$viewDoc->{'columns'}}){
 		push (@$fields, $column->{'queryname'}) if ($column->{'queryname'});		
 	}
 	#} 
-	if ($collection eq 'projects') {
-		$fields = ["_id","name",['groups','name'],['groups','id'],"description"];
-	}
 
 	my $queryOptions = {
 		'collection' => $collection,
@@ -71,7 +68,7 @@ sub submit {
 		## Add elmatch where needed accordign to the view
 		$where = $queryModel->add_elementMatch($where,$viewDoc->{'elementmatch'});
 	}
-	$queryOptions->{'restrict'}=$viewDoc->{'restrict'} if (exists $viewDoc->{'restrict'});
+
 	#$self->app->log->debug('before object to dot: query = '.Dumper($where));
 	## Change to dotnotation
 	( $where, undef ) = $queryModel->object2dotnotation($where,'');
@@ -125,36 +122,63 @@ sub submit {
 	
 		# run through the results formatting them
 		for my $record (@$records){
-			$self->app->log->debug('#### recordloop: record = '.Dumper($record));#.' to be dearrayed with '.Dumper($viewDoc->{'queryarray'}));
-			for my $queryArrayKey ( keys %{$viewDoc->{'queryarray'}} ){
-				my $queryArrayVal = $viewDoc->{'queryarray'}{$queryArrayKey};
-				$record->{$queryArrayKey}= $self->_dearray($record, $queryArrayVal);
-			}
+		
+
+			$self->app->log->debug('#### recordloop: record = '.Dumper($viewDoc,$record));#.' to be dearrayed with '.Dumper($viewDoc->{'queryarray'}));
+		
+
+			# for my $queryArrayKey ( keys %{$viewDoc->{'queryarray'}} ){
+			# 	my $queryArrayVal = $viewDoc->{'queryarray'}{$queryArrayKey};
+			# 	$record->{$queryArrayKey}= $self->_dearray($record, $queryArrayVal);
+			# }
+			# $self->app->log->debug('#### After dearrya: record = '.Dumper($record));
+
 			my $row=[];
 			my $colIndex = 0;
 			for my $col ( @{$viewDoc->{'columns'}} ){
+				if ($col->{queryname}) {
+					if (ref($col->{queryname}) eq 'ARRAY'){
+						# this is a record field, get the values
+						my $values = $self->_getvals($record,$col->{queryname});
+						$row->[$colIndex]= $values;
+					} else {
+						# simple column value
+						$row->[$colIndex]= $record->{$col->{queryname}};
+					}
+				} else {
+					my $html = $col->{template};
+					if ($col->{stash}){
+						for my $key (keys $col->{stash}){
+							my $replaced = "<%".$col->{stash}->{$key}."%>";
+							my $replace = $record->{$col->{stash}->{$key}};
+							$html =~ s/$replaced/$replace/;
+						}
+					}
+					# html column
+					$row->[$colIndex]= $html;
+				}
 				#$self->app->log->debug('col value = '.Dumper($col));
-				my %stash;
-				%stash = %{$col->{'stash'}} if defined $col->{'stash'};
-				delete $stash{'value'} if defined $stash{'value'};
-				for my $stashKey (keys %stash){
-					#check if some stash values are references to other columns
-					if(ref($stash{$stashKey}) eq 'HASH' && defined $record->{$stash{$stashKey}}){
-						$stash{$stashKey}=$record->{$stash{$stashKey}};
-					}
-				}
-				if(defined $col->{'dotnotation'} && defined $record->{$col->{'dotnotation'}}){
-					$stash{'value'} = $record->{$col->{'dotnotation'}};
-				}
-				if(!defined $col->{'template'} && defined $col->{'dotnotation'} ){
-					if(defined $record->{$col->{'dotnotation'}} && ref($record->{$col->{'dotnotation'}}) eq 'ARRAY' ){
-						$row->[$colIndex]= $viewModel->_applyTemplate({ 'name'=>'list' }, \%stash );
-					}else{
-						$row->[$colIndex]= $record->{$col->{'dotnotation'}} || '';
-					}
-				}else{
-					$row->[$colIndex]= $viewModel->_applyTemplate($col->{'template'}, \%stash );
-				}
+				# my %stash;
+				# %stash = %{$col->{'stash'}} if defined $col->{'stash'};
+				# delete $stash{'value'} if defined $stash{'value'};
+				# for my $stashKey (keys %stash){
+				# 	#check if some stash values are references to other columns
+				# 	if(ref($stash{$stashKey}) eq 'HASH' && defined $record->{$stash{$stashKey}}){
+				# 		$stash{$stashKey}=$record->{$stash{$stashKey}};
+				# 	}
+				# }
+				# if(defined $col->{'dotnotation'} && defined $record->{$col->{'dotnotation'}}){
+				# 	$stash{'value'} = $record->{$col->{'dotnotation'}};
+				# }
+				# if(!defined $col->{'template'} && defined $col->{'dotnotation'} ){
+				# 	if(defined $record->{$col->{'dotnotation'}} && ref($record->{$col->{'dotnotation'}}) eq 'ARRAY' ){
+				# 		$row->[$colIndex]= $viewModel->_applyTemplate({ 'name'=>'list' }, \%stash );
+				# 	}else{
+				# 		$row->[$colIndex]= $record->{$col->{'dotnotation'}} || '';
+				# 	}
+				# }else{
+				# 	$row->[$colIndex]= $viewModel->_applyTemplate($col->{'template'}, \%stash );
+				# }
 				$colIndex++;
 			}
 			push @{$output->{'aaData'}}, $row;
@@ -220,4 +244,37 @@ sub _dearray{ #$record, $column
 	}
 
 }
+
+
+sub _getvals{ #$record, $column
+	my $self = shift;
+	my $record = shift;
+	#print Dumper($recordRef);
+	#my $record=$recordRef;
+	#$record = {%{$recordRef}} if(ref($recordRef) eq 'HASH');
+	#$record = [@{$recordRef}] if(ref($recordRef) eq 'Array');
+	my $keys = shift;
+	#print Dumper($keysRef);
+	
+	my @keys = @{$keys};
+	my $key = shift @keys;
+	my $return = {};
+	if (ref$record eq 'ARRAY'){
+		$return = [];
+		foreach my $rec (@$record) {
+			push @$return, $rec->{$key};
+		}
+	} else {
+		if (@keys > 0){
+			# remaining levels, get the values
+			$return = $self->_getvals($record->{$key},\@keys);
+		} else {
+			# last level, return the remaining record
+			$return = $record->{$key};
+		}
+	}
+	return $return;
+}
+
+
 1;
