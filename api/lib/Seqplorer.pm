@@ -81,6 +81,7 @@ sub startup {
 
 	# default: load the main page
 	$r->get('/')->to('site#public');
+	$r->get('/table/:tableid')->to('site#table');
 
 	#my $auth_r = $r->under('/user/login')->to('user#login');
 

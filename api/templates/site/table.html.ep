@@ -1,0 +1,40 @@
+<table id="<%= $table %>" class="display">
+	<thead>
+		<tr>
+			<% foreach my $colum (@$columns) { %>
+			<th 
+			<% 	"title='".$colum->{description}."'" if ($colum->{description}); %>
+			<% 	"class='opts_th_".$table."' <img class='opts' title='Click to see options' src='img/options.png' /><div id='select_opt'><ul><li class='multi_select' action='select_all' id='all_".$table."' table='".$table."'>Select all</li><li class='multi_select' action='select_none' id='none_".$table."' table='".$table."'>Select none</li><li class='multi_select' action='inverse' id='inverse_".$table."' table='".$table."'>Inverse selection</li></ul></div>" if ($colum->{sName} && $colum->{sName} eq 'Select'); %>
+			><%= $colum->{sName} %></th>
+			<% } %>
+		</tr>
+	</thead>
+	<tbody></tbody>
+	<tfoot>
+		<tr>
+			<% foreach my $colum (@$columns) { %>
+			<th 
+			<% 	"title='".$colum->{footertip}."'" if ($colum->{footertip}); %>
+			></th>
+			<%	} %>
+		</tr>
+		<tr>
+			<% foreach my $colum (@$columns) { %>
+			<% if ($colum->{stats}) { %>
+				<% my $values = join (",",($colum->{stats}->{min}, $colum->{stats}->{Q1}, $colum->{stats}->{median}, $colum->{stats}->{Q3}, $colum->{stats}->{max})); %>			
+				<td class="sparklines" graphid="<%= $colum->{graphid} %>" sparkType="box" showOutliers=false values="<%= $values %>">
+			<% } elsif ($colum->{values}) { %>
+				<% my $values = join (",",@{$colum->{values}}); %>
+				<% my $tooltip = "({'tooltip':['".join ("','",@{$colum->{tooltip}})."']})"; %>
+				<td class="sparklines" graphid="<%= $colum->{graphid} %>" sparkType="bar" values="<%= $values %>" sparktooltipValueLookups="<%= $tooltip %>" sparktooltipFormat=' {{offset:tooltip}} - {{value}} ' sparkchartRangeMin=0>
+			<%	} else { %>
+				<td>
+			<%	} %>
+			<% if ($colum->{graphid}) { %>
+				<img class="table_icon" graphid="<%= $colum->{graphid} %>" src="img/stats.png">
+			<% } %>
+				</td>
+			<% } %>
+		</tr>
+	</tfoot>
+</table>

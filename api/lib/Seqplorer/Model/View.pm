@@ -25,6 +25,7 @@ sub get {
 	my $variant_coll = $config->{database}->{collections}->{variants} ? $config->{database}->{collections}->{variants} : "variants";
 	my $samples_coll = $config->{database}->{collections}->{samples} ? $config->{database}->{collections}->{samples} : "samples";
 	my $projects_coll = $config->{database}->{collections}->{projects} ? $config->{database}->{collections}->{projects} : "projects";
+	my $plots_coll = $config->{database}->{collections}->{plots} ? $config->{database}->{collections}->{plots} : "plots";
 
 	my $viewId = $param->{'_id'};
 
@@ -36,7 +37,8 @@ sub get {
 			"dom" => "iCr<'H'>t",
 			"mongoid" => [["_id"],["sa","id"]],
 			"elementmatch" => [["sa"]],
-			"columns" => []
+			"columns" => [],
+			"colvis" => []
 		},
 		'samples' => {
 			"_id" => "samples",
@@ -45,7 +47,8 @@ sub get {
 			"name" => "samples",
 			"dom" => "<'H'f>rt",
 			"mongoid" => [["_id"],["project","id"]],
-			"columns" => []
+			"columns" => [],
+			"colvis" => []
 		},
 		'projects' => {
 			"_id" => "projects",
@@ -54,7 +57,8 @@ sub get {
 			"name" => "projects",
 			"dom" => "<'H'f>rt",
 			"mongoid" => [["_id"],["groups","id"]],
-			"columns" => []
+			"columns" => [],
+			"colvis" => []
 		}
 	};
 
@@ -107,10 +111,10 @@ sub get {
 					'type' => "checkbox",
 					'classes' => ["multi_select"],
 					'stashvars' => {"projectsid" => "_id", "projectsname"=>"name"}}),
-			    { "sName" => "ID", "queryname" => [ "_id" ], "showable" => \0, "bVisible" => \0 },
+			    { "sName" => "ID", "queryname" => [ "_id" ], "showable" => 0, "bVisible" => \0 },
 			    { "sName" => "Name", "queryname" => [ "name" ], "sorting" => \1 },
 			    { "sName" => "Groups", "queryname" => [ "groups", "name" ], "template" => { "name" => "concat", "option" => "_" } },
-			    { "sName" => "Group ID", "queryname" => [ "groups", "id" ], "showable" => \0, "bVisible" => \0, },
+			    { "sName" => "Group ID", "queryname" => [ "groups", "id" ], "showable" => 0, "bVisible" => \0, },
 			    { "sName" => "Description", "queryname" => [ "description" ] }
 			];
 
@@ -130,16 +134,16 @@ sub get {
 					'type' => "checkbox",
 					'classes' => ["multi_select"],
 					'stashvars' => {"samplesid" => "_id", "samplesname"=>"name"}}),
-			    { "sName" => "ID", "queryname" => [ "_id" ], "showable" => \0, "bVisible" => \0 },
+			    { "sName" => "ID", "queryname" => [ "_id" ], "showable" => 0, "bVisible" => \0 },
 			    { "sName" => "Name", "queryname" => [ "name" ], "sorting" => \1 },
 			    { "sName" => "Description", "queryname" => [ "description" ] },
 			    { "sName" => "Genomebuild", "queryname" => [ "genome" ] },
 			    { "sName" => "Project", "queryname" => [ "project", "name" ], "template" => { "name" => "concat", "option" => "\/" }, "bSortable" => \0 },
-			    { "sName" => "Project ID", "queryname" => [ "project", "id" ], "showable" => \0, "bVisible" => \0 },
+			    { "sName" => "Project ID", "queryname" => [ "project", "id" ], "showable" => 0, "bVisible" => \0 },
 			    { "sName" => "File name", "queryname" => [ "files", "name" ], "bSortable" => \0  },
 			    { "sName" => "File type", "queryname" => [ "files", "filetype" ], "bSortable" => \0  },
 			    { "sName" => "File location", "queryname" => [ "files", "type" ], "bSortable" => \0  },
-			    { "sName" => "Filename", "queryname" => [ "files", "file" ], "showable" => \0, "bVisible" => \0 },
+			    { "sName" => "Filename", "queryname" => [ "files", "file" ], "showable" => 0, "bVisible" => \0 },
 			    { "sName" => "Compression", "queryname" => [ "files", "compression" ], "bSortable" => \0  },
 			    { "sName" => "File host", "queryname" => [ "files", "host" ], "bSortable" => \0  },
 			    { "sName" => "Username", "queryname" => [ "files", "user" ], "bSortable" => \0 },
@@ -195,21 +199,26 @@ sub get {
 	}
 
 	foreach my $col (keys %stashcolumns){
-		push (@$columns,{"queryname" => [$col], "showable" => \0, "bVisible" => \0 }) unless ($allcolumns{$col});
+		push (@$columns,{"queryname" => [$col], "showable" => 0, "bVisible" => \0 }) unless ($allcolumns{$col});
 	}
 	# now add all the mongoid columns to the view
 	if ($return->{'mongoid'}){
 		foreach my $col (@{$return->{'mongoid'}}){
 			my $colstring = join(".",@$col);
-			push (@$columns,{"queryname" => $col, "showable" => \0, "bVisible" => \0 }) unless ($allcolumns{$colstring} || $stashcolumns{$colstring});
+			push (@$columns,{"queryname" => $col, "showable" => 0, "bVisible" => \0 }) unless ($allcolumns{$colstring} || $stashcolumns{$colstring});
 		}
 	}
 
 	# now remove the stashcolumns if the are already part of the columns
+	my $index = 0;
 	for my $column (@$columns) {
+		my $filter = \0;
 		if (ref$column eq 'HASH') {
 			# this column element is fully encoded in the view record
 			push @{$return->{'columns'}}, $column;
+			# add the colum index with the showable argument to the colvis section of the header
+			push @{$return->{'colvis'}}, $index if ($column->{showable} && !$column->{showable});
+			delete $column->{showable};
 		} else {
 			# in case of column dot notation: create a default column
 			my @arraynotation = split(/\./,$column);
@@ -224,7 +233,7 @@ sub get {
 			# #->unused in frontend
 			# push @{$return->{'fields'}}, $column->{'dotnotation'} if defined $column->{'dotnotation'};
 			# #add extra info from _unique collection
-
+			
 			if($return->{collection} eq 'variants'){
 				# get record form "unique" collection
 				my $uniqueDoc = $self->mongoDB->db->collection($variants_unique_coll)->find_one({'_id' => $column});
@@ -234,9 +243,34 @@ sub get {
 					$element->{'type'} = $uniqueDoc->{'type'} if $uniqueDoc->{'type'};
 					$element->{'description'} = $uniqueDoc->{'description'} if $uniqueDoc->{'description'};
 					$element->{'stats'} = $uniqueDoc->{'stats'} if $uniqueDoc->{'stats'};
-					$element->{'graph'} = $uniqueDoc->{'graph'} if $uniqueDoc->{'graph'};
+					use Data::Dumper;
+					if ($uniqueDoc->{'graph'}){
+						my $plotDoc = $self->mongoDB->db->collection($plots_coll)->find_one({'_id' => $uniqueDoc->{'graph'}->{'_id'}});
+						if ($plotDoc){
+							# list with more than 20 elements connot be displayed
+							if (@{$plotDoc->{data}->{values}} < 21) {
+								# TODO: when bug is fixed in mapreduce operation we don't want to remove this first value anymore!!!
+								shift ($plotDoc->{data}->{values});
+								shift ($plotDoc->{data}->{counts});
+								$element->{'values'} = $plotDoc->{data}->{counts};
+								$element->{'tooltip'} = $plotDoc->{data}->{values};
+							}
+						}
+						$element->{'graphid'} = $uniqueDoc->{'graph'}->{'_id'}."";
+					}
 
-					$element->{'values'} = $uniqueDoc->{'values'} if $uniqueDoc->{'values'} && ref($uniqueDoc->{'values'}[0]) ne 'ARRAY';
+					if ($uniqueDoc->{'type'} eq 'text'){
+						if (ref($uniqueDoc->{'values'}[0]) ne 'ARRAY'){
+							$filter = { 
+								type => "select",
+								values => $uniqueDoc->{'values'}
+							};							
+						} else {
+							$filter = {	type => "text"};
+						}
+					} elsif ($uniqueDoc->{'type'} eq 'numerical'){
+						$filter = { type => "number"};
+					}
 					$element->{'showable'} = \0 if $uniqueDoc->{'type'} eq 'mongo_id';
 					$element->{'bVisible'} = \0 if $uniqueDoc->{'type'} eq 'mongo_id';
 					#$column->{'searchtype'}=$uniqueDoc->{'type'};
@@ -251,6 +285,8 @@ sub get {
 			}
 			push @{$return->{'columns'}}, $element;
 		}
+		push @{$return->{'columnfilter'}}, $filter;
+		$index ++;
 	}
 #	$cache->set($viewId, \%return);
 #	if( defined $cache->get($viewId) ){
@@ -358,7 +394,7 @@ sub _html_column {
 		"bSortable" => \0,
 		"bSearchable" => \0,
 		"row_detail" => \0,
-      	"showable" => \0,
+      	"showable" => 0,
       	"template" => $html,
       	"stash" => $stashvars
 	};

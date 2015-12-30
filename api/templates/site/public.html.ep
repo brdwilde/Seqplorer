@@ -22,6 +22,8 @@
 
 	<script type="text/javascript" src="js/dataTables_1.9.4.js"></script>
 	<script type="text/javascript" src="js/dataTables-ColVis_1.0.9-dev.js"></script>
+	<script type="text/javascript" src="js/jquery-datatables-column-filter.js"></script>
+	<script type="text/javascript" src="js/jquery-sparkline.js"></script>
 
 	<script type="text/javascript" src="js/jstree.js"></script>
 	<script type="text/javascript" src="js/jformer.js"></script>

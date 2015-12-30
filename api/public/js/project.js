@@ -13,50 +13,6 @@ $(document).ready( function() {
 		});
 	});
 
-// 	(function() {
-// 		var ac, c, f, fa, fe, fea, x, y, z;
-// 	   	//ac = autocomplete constant (attribute to search for)
-// 	   	//c = count of the number of times the autocomplete constant was found
-// 		//f = all forms on the current page
-// 		//fa = attibutes in the current form
-// 		//fe = elements in the current form
-// 		//fea = attibutes in the current form element
-// 		//x,y,z = loop variables
-
-// 		ac = "autocomplete";
-// 		c = 0;
-// 		f = document.forms;
-
-// 		//cycle through each form
-// 		for(x = 0; x < f.length; x++) {
-// 		fa = f[x].attributes;
-// 		//cycle through each attribute in the form
-// 		for(y = 0; y < fa.length; y++) {
-// 		//check for autocomplete in the form attribute
-// 		if(fa[y].name.toLowerCase() == ac) {
-// 		fa[y].value = "on";
-// 		c++;
-// 		}
-// 		}
-
-// 		fe = f[x].elements;
-// 		//cycle through each element in the form
-// 		for(y = 0; y < fe.length; y++) {
-// 		fea = fe[y].attributes;
-// 		//cycle through each attribute in the element
-// 		for(z = 0; z < fea.length; z++) {
-// 		//check for autocomplete in the element attribute
-// 		if(fea[z].name.toLowerCase() == ac) {
-// 		fea[z].value = "on";
-// 		c++;
-// 		}
-// 		}
-// 		}
-// 		}
-
-//    alert("Enabled '" + ac + "' on " + c + " objects.");
-// });
-
 	$(function() {
 		$( document ).tooltip({
 			track: true
@@ -113,16 +69,14 @@ $(document).ready( function() {
 
 	// Row detail
 	$("body").on("click", ".row_detail", function(){
+		var variantid = $(this).attr('variantid');
 		$.post(
-			"query/variant_id.php",
-			{variantid:$(this).attr('variantid')},
+			"variant/"+variantid,
 			function(responseText){
-				var form = "<a id='hidediv' href=''><img class='cancel_popup' src='img/back.png'></img></a>"+responseText;
-				$('#showhide').html(form);
+				$('#showhide').html(responseText);
+				$('#showhide').fadeIn('slow');
 			}
 		);
-		$('#showhide').fadeIn('slow');
-
 	});
 
 	// Text filtering
@@ -200,7 +154,6 @@ $(document).ready( function() {
 			alert ("Searching on this column is limited to numerical values! Examples:\n\n\t123\n\t12.34\n\t>12.34\n\t>0.5e-8");
 		}
 	});
-
 
 	/////////////////////////////////////////////////////////////
 	// MENUS
@@ -306,7 +259,7 @@ $(document).ready( function() {
 		return false;
 	});
 	// Make the showhide 'popup' dragable
-	$('#showhide').draggable({handle: 'h4'});
+	$('#showhide').draggable();
 
 	// log a user in
 	$("body").on("click", "#loginbutton", function(){
@@ -423,46 +376,6 @@ $(document).ready( function() {
 		//console.log($(this).val());
 	});
 
-	// // Create sortable for views
-	// $("body").on("click",".change_view",function(){
-	// 	$( "ul.droptrue" ).sortable({
-	// 		connectWith: ".droptrue",
-	// 		placeholder: "ui-state-highlight",
-	// 		update: function( event, ui ) {
-	// 			var vis_col = $( "#visible_columns" ).sortable( "toArray" );
-	// 			$.each(vis_col, function (index, value){
-	// 				vis_col[index] = eval('(' + value + ')');
-	// 				vis_col[index].bVisible = true;
-	// 			});
-	// 			var hid_col = $( "#hidden_columns" ).sortable( "toArray" );
-	// 			$.each(hid_col, function (index, value){
-	// 				hid_col[index] = eval('(' + value + ')');
-	// 				hid_col[index].bVisible = false;
-	// 			});
-	// 			var merged = $.merge(hid_col, vis_col);
-	// 				$("#col_string").val(JSON.stringify(merged));
-	// 		}
-	// 	});
-	// 	var vis_col = $( "#visible_columns" ).sortable( "toArray" );
-	// 	$.each(vis_col, function (index, value){
-	// 		vis_col[index] = eval('(' + value + ')');
-	// 		vis_col[index].bVisible = true;
-	// 	});
-	// 	var hid_col = $( "#hidden_columns" ).sortable( "toArray" );
-	// 	$.each(hid_col, function (index, value){
-	// 		hid_col[index] = eval('(' + value + ')');
-	// 		hid_col[index].bVisible = false;
-	// 	});
-	// 	var merged = $.merge(hid_col, vis_col);
-	// 	$("#col_string").val(JSON.stringify(merged));
-	// 	$( "#hidden_columns, #visible_columns").disableSelection();
-	// 	$('#visible_columns').data('visible_columns', $('#visible_columns').html());
-	// 	$('#hidden_columns').data('hidden_columns', $('#hidden_columns').html());
-
-	// 	$(".clear_view").show();
-	// 	return false;
-	// });
-
 	//////////////////////////////////////////////////////////////
 	// functions to select groups, projects or samples
 	//
@@ -476,50 +389,30 @@ $(document).ready( function() {
 		if ($(this).attr("showtable")){
 			// the user has requested us to display this table
 			var table = $(this).attr("showtable");
-			//if (SEQPLORER.tables[table].oTable){
-				// the table exists
-				// Adjust header without full redraw (without backend request)
-				SEQPLORER.tables[table].oTable.fnAdjustColumnSizing(false);
-			//} else {
-				// table does not exist, draw it
-			//	_table_create(table);
-			//}
-			// select the accordion the table is in
 			$( "#accordion").accordion( "option","active", SEQPLORER.accordion[table] );
 		}
 		if ($(this).attr("samplesid")){
 			// change the selected sample and redraw the variants table
 			SEQPLORER.deselect_object_all('samples');
 			SEQPLORER.select_object('samples',$(this).attr("samplesid"),$(this).attr("samplesname"));
-			_table_create('variants');
+			// reload variants table
+			SEQPLORER.tables['variants'].oTable.fnDraw();
 		}
 		if ($(this).attr("projectsid")){
 			// change the selected project and redraw the samples table
 			SEQPLORER.deselect_object_all('projects');
 			SEQPLORER.select_object('projects',$(this).attr("projectsid"),$(this).attr("projectsname"));
-			//$('a.advanced_filtering').attr('projectsid',JSON.stringify(SEQPLORER.projects));
 			if (!$(this).attr("samplesid")){
 				SEQPLORER.deselect_object_all('samples');
 			}
-			// redraw table
-			_table_create('samples');
+			// redraw samples table
+			SEQPLORER.tables['samples'].oTable.fnDraw();
 		}
-		// if ($(this).attr("group_ids")){
-		// 	// change the selected group and redraw the projects table
-		// 	if (!$(this).attr("samplesid")){
-		// 		SEQPLORER.deselect_object_all('variants');
-		// 	}
-		// 	if (!$(this).attr("projectid")){
-		// 		SEQPLORER.deselect_object_all('samples');
-		// 	}
-		// 	_table_create('projects');
-		// }
 		SEQPLORER.multi_select_all();
 		return false;
 	});
 
 	// select multiple samples or projects with checkboxes and Update tables accordingly
-
 	$("body").on("click", ".view_opts", function(){
 		$('#view_opt').toggle();
 		return false;
@@ -533,7 +426,6 @@ $(document).ready( function() {
 		return false;
 	});
 
-
 	// Show dropdown options
 	$("body").on("click", ".opts", function(){
 		// Check if the image is inside a column header
@@ -543,6 +435,7 @@ $(document).ready( function() {
 		}
 		return false;
 	});
+
 	// multi select
 	$("body").on("click", ".multi_select", function(){
 		// Check for action (multiselect, deselect of inverse selection)
@@ -585,7 +478,7 @@ $(document).ready( function() {
 					table = 'samples';
 				}
 			});
-			_table_create(table);
+			SEQPLORER.tables[table].oTable.fnDraw();
 			$("#"+table+"_header").parents('h3').effect("highlight", {"color":"#22222D"  }, 500);
 			$(this).parent().parent("#select_opt").hide();
 		}
@@ -597,7 +490,7 @@ $(document).ready( function() {
 				} else {
 					SEQPLORER.deselect_object($(this).attr("samplesid"), 'samples');
 				}
-				_table_create('variants');
+				SEQPLORER.tables['variants'].oTable.fnDraw();
 				$("#variants_header").parents('h3').effect("highlight", {"color":"#22222D"  }, 500);
 			}
 			if ($(this).attr("projectsid")){
@@ -606,7 +499,7 @@ $(document).ready( function() {
 				} else {
 					SEQPLORER.deselect_object($(this).attr("projectsid"), 'projects');
 				}
-				_table_create('samples');
+				SEQPLORER.tables['samples'].oTable.fnDraw();
 				$("#samples_header").parents('h3').effect("highlight", { "color":"#22222D" }, 500);
 			}
 		}
@@ -630,20 +523,20 @@ $(document).ready( function() {
 		}
 	});
 
-	// Show hidden div ==> used for Q&A
-	$("body").on("click", ".clickMe", function(){
-		var id= $(this).attr("id");
-		var img = $(this).children("img");
-		if (img.is('.open') ){
-			img.attr("src","img/icon_tree_off.gif");
-			img.removeClass('open');
-		}
-		else {
-			img.attr("src","img/icon_tree_on.gif");
-			img.addClass('open');
-		}
-		$("#textBox_"+id).toggle('slow');
-	});
+	// // Show hidden div ==> used for Q&A
+	// $("body").on("click", ".clickMe", function(){
+	// 	var id= $(this).attr("id");
+	// 	var img = $(this).children("img");
+	// 	if (img.is('.open') ){
+	// 		img.attr("src","img/icon_tree_off.gif");
+	// 		img.removeClass('open');
+	// 	}
+	// 	else {
+	// 		img.attr("src","img/icon_tree_on.gif");
+	// 		img.addClass('open');
+	// 	}
+	// 	$("#textBox_"+id).toggle('slow');
+	// });
 
 	// Create a new sample from selection
 	// TODO: reveiw code and update to jFormer
@@ -777,25 +670,6 @@ $(document).ready( function() {
 		$('#showhide').fadeIn('slow');
 	});
 
-	// Show transcript view of variants table
-	// TODO: create view menu adn update views
-	$("body").on("click", ".transcript_view", function(){
-		if ($(this).hasClass('disabled')){
-			$(this).removeClass('disabled');
-			$(this).addClass('enabled');
-			$(this).html("<img src='img/transcript_view_en.png'/>");
-			oWhere.variants.view = 'transcripts';
-		}
-		else if ($(this).hasClass('enabled')) {
-			$(this).removeClass('enabled');
-			$(this).addClass('disabled');
-			$(this).html("<img src='img/transcript_view.png'/>");
-			oWhere.variants.view = 'variants';
-		}
-		_table_create('variants');
-		return false;
-	});
-
 	//////////////////////////////////////////////////////////////
 	// FUNCTIONS ATTACHED TO JFORMER FORMS
 	//////////////////////////////////////////////////////////////
@@ -804,97 +678,97 @@ $(document).ready( function() {
 	//////////////////////////
 
 	// remove preloaded filter line
-	$("body").on("click", 'select[id^="samplefiletype"]', function(){
-		var selected = $(this).val();
+	// $("body").on("click", 'select[id^="samplefiletype"]', function(){
+	// 	var selected = $(this).val();
 
-		var counter;
-		var matches = (" " + $(this).parent().attr('id') + " ").match(/\ssamplefiletype(\d+)-wrapper\s/);
-		if (matches) {
-			counter = parseInt(matches[1], 10);
-		}
+	// 	var counter;
+	// 	var matches = (" " + $(this).parent().attr('id') + " ").match(/\ssamplefiletype(\d+)-wrapper\s/);
+	// 	if (matches) {
+	// 		counter = parseInt(matches[1], 10);
+	// 	}
 
-		if (selected === 'local'){
-			$('#file'+counter+'-wrapper').show();
-			$('#path'+counter+'-wrapper').hide();
-			$('#host'+counter+'-wrapper').hide();
-			$('#user'+counter+'-wrapper').hide();
-			$('#pass'+counter+'-wrapper').hide();
-			$('#compression'+counter+'-wrapper').show();
-			$('#filetype'+counter+'-wrapper').show();
-		} else if (selected === 'http'){
-			$('#file'+counter+'-wrapper').show();
-			$('#path'+counter+'-wrapper').hide();
-			$('#host'+counter+'-wrapper').show();
-			$('#user'+counter+'-wrapper').hide();
-			$('#pass'+counter+'-wrapper').hide();
-			$('#compression'+counter+'-wrapper').show();
-			$('#filetype'+counter+'-wrapper').show();
-		} else if (selected === 'ftp'){
-			$('#file'+counter+'-wrapper').show();
-			$('#path'+counter+'-wrapper').hide();
-			$('#host'+counter+'-wrapper').show();
-			$('#user'+counter+'-wrapper').hide();
-			$('#pass'+counter+'-wrapper').hide();
-			$('#compression'+counter+'-wrapper').show();
-			$('#filetype'+counter+'-wrapper').show();
-		} else if (selected === 'https'){
-			$('#file'+counter+'-wrapper').show();
-			$('#path'+counter+'-wrapper').hide();
-			$('#host'+counter+'-wrapper').show();
-			$('#user'+counter+'-wrapper').show();
-			$('#pass'+counter+'-wrapper').show();
-			$('#compression'+counter+'-wrapper').show();
-			$('#filetype'+counter+'-wrapper').show();
-		}
+	// 	if (selected === 'local'){
+	// 		$('#file'+counter+'-wrapper').show();
+	// 		$('#path'+counter+'-wrapper').hide();
+	// 		$('#host'+counter+'-wrapper').hide();
+	// 		$('#user'+counter+'-wrapper').hide();
+	// 		$('#pass'+counter+'-wrapper').hide();
+	// 		$('#compression'+counter+'-wrapper').show();
+	// 		$('#filetype'+counter+'-wrapper').show();
+	// 	} else if (selected === 'http'){
+	// 		$('#file'+counter+'-wrapper').show();
+	// 		$('#path'+counter+'-wrapper').hide();
+	// 		$('#host'+counter+'-wrapper').show();
+	// 		$('#user'+counter+'-wrapper').hide();
+	// 		$('#pass'+counter+'-wrapper').hide();
+	// 		$('#compression'+counter+'-wrapper').show();
+	// 		$('#filetype'+counter+'-wrapper').show();
+	// 	} else if (selected === 'ftp'){
+	// 		$('#file'+counter+'-wrapper').show();
+	// 		$('#path'+counter+'-wrapper').hide();
+	// 		$('#host'+counter+'-wrapper').show();
+	// 		$('#user'+counter+'-wrapper').hide();
+	// 		$('#pass'+counter+'-wrapper').hide();
+	// 		$('#compression'+counter+'-wrapper').show();
+	// 		$('#filetype'+counter+'-wrapper').show();
+	// 	} else if (selected === 'https'){
+	// 		$('#file'+counter+'-wrapper').show();
+	// 		$('#path'+counter+'-wrapper').hide();
+	// 		$('#host'+counter+'-wrapper').show();
+	// 		$('#user'+counter+'-wrapper').show();
+	// 		$('#pass'+counter+'-wrapper').show();
+	// 		$('#compression'+counter+'-wrapper').show();
+	// 		$('#filetype'+counter+'-wrapper').show();
+	// 	}
 
-		// update the page wrapper height
-		var pagewrapper = $('.jFormPageWrapper').height();
-		var height = $('#sample_file_type'+newcounter+'-wrapper').height() + $('.jFormPageWrapper').height() + 220;
-		$('.jFormPageWrapper').height(height);
+	// 	// update the page wrapper height
+	// 	var pagewrapper = $('.jFormPageWrapper').height();
+	// 	var height = $('#sample_file_type'+newcounter+'-wrapper').height() + $('.jFormPageWrapper').height() + 220;
+	// 	$('.jFormPageWrapper').height(height);
 
-		// show the new input fields
-		var newcounter = Number(counter) + 1;
-		$('#filecounter'+newcounter).show();
-		$('#samplefiletype'+newcounter+'-wrapper').show();
-		$('.removefileline').attr('counter', newcounter);
+	// 	// show the new input fields
+	// 	var newcounter = Number(counter) + 1;
+	// 	$('#filecounter'+newcounter).show();
+	// 	$('#samplefiletype'+newcounter+'-wrapper').show();
+	// 	$('.removefileline').attr('counter', newcounter);
 
-		return false;
-	});
+	// 	return false;
+	// });
 
-	// remove preloaded filter line
-	$("body").on("click", ".removefileline", function(){
-		var counter = $(this).attr('counter');
-		//$(this).remove();
+	// // remove preloaded filter line
+	// $("body").on("click", ".removefileline", function(){
+	// 	var counter = $(this).attr('counter');
+	// 	//$(this).remove();
 
-		$('#file'+counter+'-wrapper').remove();
-		$('#path'+counter+'-wrapper').remove();
-		$('#host'+counter+'-wrapper').remove();
-		$('#user'+counter+'-wrapper').remove();
-		$('#pass'+counter+'-wrapper').remove();
-		$('#compression'+counter+'-wrapper').remove();
-		$('#filetype'+counter+'-wrapper').remove();
-	});
+	// 	$('#file'+counter+'-wrapper').remove();
+	// 	$('#path'+counter+'-wrapper').remove();
+	// 	$('#host'+counter+'-wrapper').remove();
+	// 	$('#user'+counter+'-wrapper').remove();
+	// 	$('#pass'+counter+'-wrapper').remove();
+	// 	$('#compression'+counter+'-wrapper').remove();
+	// 	$('#filetype'+counter+'-wrapper').remove();
+	// });
 
-	$("body").on("click", ".form_folder", function(){
-		var img = $(this);
-		if (img.is('.open') ){
-			img.attr("src","img/icon_tree_on.gif");
-			img.removeClass('open');
-			img.next("#form_folder").toggle();
-			var height = img.next("#form_folder").height();
-			var total_height = $(".jFormPageWrapper").height()-height;
-			$(".jFormPageWrapper").height(total_height);
+	// $("body").on("click", ".form_folder", function(){
+	// 	var img = $(this);
+	// 	if (img.is('.open') ){
+	// 		img.attr("src","img/icon_tree_on.gif");
+	// 		img.removeClass('open');
+	// 		img.next("#form_folder").toggle();
+	// 		var height = img.next("#form_folder").height();
+	// 		var total_height = $(".jFormPageWrapper").height()-height;
+	// 		$(".jFormPageWrapper").height(total_height);
 			
-		}
-		else {
-			img.attr("src","img/icon_tree_off.gif");
-			img.addClass('open');
-			var height = img.next("#form_folder").height();
-			var total_height = $(".jFormPageWrapper").height()+height;
-			$(".jFormPageWrapper").height(total_height);
-			img.next("#form_folder").toggle();
-		}
-	});
+	// 	}
+	// 	else {
+	// 		img.attr("src","img/icon_tree_off.gif");
+	// 		img.addClass('open');
+	// 		var height = img.next("#form_folder").height();
+	// 		var total_height = $(".jFormPageWrapper").height()+height;
+	// 		$(".jFormPageWrapper").height(total_height);
+	// 		img.next("#form_folder").toggle();
+	// 	}
+	// });
 
 
 	// VIEWS FUNCTIONS
@@ -1146,12 +1020,14 @@ $(document).ready( function() {
 function _table_create(table) {
 	// set some variables
 	var view = SEQPLORER.tables[table].view; // the view on the database table the user requested
+	console.log(view);
 
 	// replace table with loader image when table is loading
 	$('#table_'+table).html( "<img src='img/loader.gif' alt='loading...' />" );
 
 	// Get the headers for this table
 	if (!SEQPLORER.tables[table].hasOwnProperty('columns')){
+		console.log("recreate table "+table);
 		$.get(
 			"view/"+SEQPLORER.tables[table].view,
 			//{view:SEQPLORER.tables[table].view,collection:table,columns:"1"},
@@ -1159,92 +1035,45 @@ function _table_create(table) {
 				// Add the columns post response to the global columns object
 				SEQPLORER.set_table_value(table, 'columns', response.columns);
 				SEQPLORER.set_table_value(table, 'dom', response.dom);
-				_table_build(table);
+				SEQPLORER.set_table_value(table, 'columnfilter', response.columnfilter);
+				SEQPLORER.set_table_value(table, 'colvis', response.colvis);
+				//SEQPLORER.set_table_value(table, 'view', response.view);
+				$.get(
+					"table/"+table,
+					function(response){
+						$('#table_'+table).html( response );
+						//$('.sparklines').sparkline('html', { enableTagOptions: true });
+						_table_build(table);
+					},
+					"html"
+				);
 			},
 			"json"
 		);
 	} else {
+		console.log("refill table "+table);
 		_table_build(table);
 	}
 }
 
 function _table_build(table) {
-	var colvis = []; // Create array to contain index of colmuns not in ColVis list
-	var sorting = 2; // Set sorting index (default --> third column)
-	var tablestructure = '<table id="'+table+'" class="display">'; // Holds table structure
 
-	// Create the table head
-	tablestructure = tablestructure+'<thead><tr>';
-	$.each(SEQPLORER.tables[table].columns, function(index, value) {
-		tablestructure += '<th ';
-		if (value.description){
-			tablestructure += 'title="'+value.description+'" ';
-		}
-		if (value.showable===false){
-			colvis.push(index);
-		}
-		if (value.customSort===true){
-			tablestructure += 'class="custom_sort" title="Custom sort" table="'+table+'" col="'+index+'" direction="asc" ';
-		}
-		// Selection tools
-		if (value.sName == "Select"){
-				tablestructure += "class='opts_th_"+table+"'";
-				value.sName += "<img class='opts' title='Click to see options' src='img/options.png' /><div id='select_opt'><ul><li class='multi_select' action='select_all' id='all_"+table+"' table='"+table+"'>Select all</li><li class='multi_select' action='select_none' id='none_"+table+"' table='"+table+"'>Select none</li><li class='multi_select' action='inverse' id='inverse_"+table+"' table='"+table+"'>Inverse selection</li></ul></div>";
-		}
-
-		if (value.sorting===true){
-			sorting = index;
-		}
-		tablestructure += '>'+value.sName+'</th>';
-	});
-
-	// Create the table footer ...
-	tablestructure = tablestructure+'</tr></thead><tbody></tbody>';
-	// tablestructure = tablestructure+'</tr></thead><tbody></tbody><tfoot><tr>';
-	// $.each(SEQPLORER.tables[table].columns, function(index, value) {
-	// 	tablestructure += '<th ';
-	// 	if (value.footertip){
-	// 		tablestructure += 'title="'+value.footertip+'"';
-	// 	}
-	// 	tablestructure += '>';
-	// 	// ... with filters
-	// 	if (value.searchtype=="text"){
-	// 		tablestructure += '<input type="text" class="textsearch" table_name="'+SEQPLORER.tables[table].collection+'" column="'+index+'" column_name="'+value.queryname+'"></input>';
-	// 	}
-	// 	else if (value.searchtype=="list"){
-	// 		tablestructure += '<select class="listsearch" column="'+index+'">';
-	// 		tablestructure += '<option value=""></option>';
-	// 		$.each(value.list, function(key, content) {
-	// 			tablestructure += '<option value="'+content+'">'+content+'</option>';
-	// 		});
-	// 		tablestructure += '</select>';
-	// 	}
-	// 	else if (value.searchtype=="numerical"){
-	// 		tablestructure += '<input type="text" class="numericalsearch" column="'+index+'"></input>';
-	// 	}
-	// 	tablestructure += '</th>';
-	// });
-	// tablestructure = tablestructure+'</tr></tfoot></table>';
-	tablestructure += '</table>';
-
-	// Print the table structure
-	$('#table_'+table).html( tablestructure );
 	// Create the table object and fill it with data
 	SEQPLORER.tables[table].oTable = $('#'+table).dataTable( {
 		"bProcessing": true,
 		"bServerSide": true,
 		"iDisplayLength": 30,
-		//"bSort": SEQPLORER.tables[table].sorting, !! there is no sorting response in the columns query?? where did this value come from?
+		// "bSort": SEQPLORER.tables[table].sorting, !! there is no sorting response in the columns query?? where did this value come from?
 		// "aaSorting":[[sorting, "desc"]],
 		"bScrollInfinite": true,
 		"bScrollCollapse": true,
 		"bAutoWidth": true,
-		"sScrollY": $("#accordion").height()-SEQPLORER.interface_vars.height_correction,
+		// "sScrollY": $("#accordion").height()-SEQPLORER.interface_vars.height_correction,
 		"sScrollX": "auto",
 		"oColVis": {
 			"buttonText": "Columns",
 			// Exclude some columns from the list
-			"aiExclude": colvis
+			"aiExclude": SEQPLORER.tables[table].colvis
 		},
 		"sDom": SEQPLORER.tables[table].dom,
 		"sAjaxSource": "query/"+table,
@@ -1258,18 +1087,21 @@ function _table_build(table) {
 			}
 			// Set background for custom sort to default
 			$(".custom_sort").css("background","url('css/jquery-ui-seqplorer/images/sort_both.png') no-repeat center right");
+			
 			// Execute table-specific redraw functions
+			// if (table == 'projects'){
+			// 	var where = SEQPLORER.build_query(table); // TODO: this will always evaluate to true with the SEQPLORER object... other solution?
+			// 	if (where){
+			// 		$("#table_projects").show();
+			// 		$("#welcome").hide();
+			// 	} else {
+			// 		$("#table_projects").hide();
+			// 		$("#welcome").show();
+			// 	}
+			// }
 
-			if (table == 'projects'){
-				var where = SEQPLORER.build_query(table); // TODO: this will always evaluate to true with the SEQPLORER object... other solution?
-				if (where){
-					$("#table_projects").show();
-					$("#welcome").hide();
-				} else {
-					$("#table_projects").hide();
-					$("#welcome").show();
-				}
-			}
+			// add the sparkline elements
+			$('.sparklines').sparkline('html', { enableTagOptions: true });
 
 			oSettings.oScroll.sY = $("#accordion").height()-SEQPLORER.interface_vars.height_correction.variants;
 			// Height correction to correctly show one result
@@ -1319,175 +1151,181 @@ function _table_build(table) {
 			} );
 		}
 	} );
+	// add per column filtering
+	if (table === 'variants'){
+		SEQPLORER.tables[table].oTable.columnFilter({
+			aoColumns: SEQPLORER.tables[table].columnfilter
+		});
+	}
 }
 
 // Formating function for row details
-function formatDetails ( table, row ){
-	var aData = table.fnGetData( row );
-	var table_id = table.attr("id");
-	// Start construction details output
-	var sOut = '{"html":"<table cellpadding=\\"5\\" cellspacing=\\"0\\" border=\\"0\\" style=\\"padding-left:50px;\\">';
-	var chr,start,stop,id;
-	var subtable;
-	var subtable_array = [];
-	$.each(SEQPLORER.tables[table_id].columns, function(index, value) {
-		if (aData[index]){
-			if (value.row_detail!==false){
-				if (value.queryname[0] != 'sa' || value.queryname[1] == 'info') {
-					if (value.row_detail){
-						switch(value.row_detail.type){
-							case 'link':
-								var url = value.row_detail.url;
-								if (value.row_detail.get){
-									url = url+'?'+value.row_detail.get+'='+aData[index];
-								}
-								sOut += '<tr><td>'+value.sName+'</td><td><a href='+url+'  target=\\"_blank\\">'+aData[index]+'</a></td><tr>';
-								break;
-							case 'region':
-								if (value.row_detail.reg_chr){
-									chr = aData[index];
-								} else if (value.row_detail.reg_start){
-									start = aData[index];
-								} else if (value.row_detail.reg_stop){
-									stop = aData[index];
-								}
-								break;
-							case 'subtable':
-								subtable = value.row_detail.tablename;
-								if (value.row_detail.columname){
-									subtable_array.push ({ column : value.row_detail.columname, value :aData[index]});
-								} else {
-									subtable_array.push ({ column : value.queryname, value :aData[index]});
-								}
-								break;
-							case 'id':
-								id = aData[index];
-								break;
-							default:
-								sOut += '<tr><td>'+value.sName+'</td><td>'+aData[index]+'</td></tr>';
-						}
-					} else {
-						sOut += '<tr><td>'+value.sName+'</td><td>'+aData[index]+'</td></tr>';
-					}
-				}
-			}
-		}
-	});
-	if (chr && start && stop){
-		sOut += '<tr><td>View region '+chr+':'+start+'-'+stop+' in:</td>';
-		sOut +=	'<td><a href=http://www.ensembl.org/Homo_sapiens/Location/Overview?r='+chr+':'+start+'-'+stop+' target=\\"_blank\\" title=\\"Ensembl\\" ><img class=\\"linkout\\" src=\\"img/Ensembl.jpg\\" alt=\\"Ensembl\\"/></a>';
-		sOut += '<a href=http://genome.ucsc.edu/cgi-bin/hgTracks?clade=mammal&org=Human&db=hg19&position=chr'+chr+':'+start+'-'+stop+' target=\\"_blank\\" title=\\"UCSC\\"><img class=\\"linkout\\" src=\\"img/UCSC.jpg\\" alt=\\"UCSC\\"/></a>';
-		sOut += '<a href=http://www.ncbi.nlm.nih.gov/projects/mapview/maps.cgi?TAXID=9606&CHR='+chr+'&MAPS=ideogr,cntg-r,ugHs,genes['+start+'%3A'+stop+'] target=\\"_blank\\" title=\\"NCBI\\"><img class=\\"linkout\\" src=\\"img/NCBI.png\\" alt=\\"NCBI\\"/></a>';
-		// sOut +=	'<a href=http://localhost:60151/goto?locus=chr'+chr+':'+start+'-'+stop+'&merge=true ><img class=\\"linkout\\" src=\\"img/IGV_32.png\\" alt=\\"IGV\\"/></a></td>';
-		sOut += '</tr>';
-		// sOut += '<tr><td>Goldmine literature search:</td>';
-		// sOut +=	'<td><a href=http://www.nxtvat.org/goldmine/search/'+id+' target=\\"_blank\\"><img class=\\"linkout\\" src=\\"http://www.nxtvat.org/goldmine/img/goldmine.png\\" alt=\\"GoldMine\\"/></a></td>';
-		// sOut += '</tr>';
-	}
-	sOut += '</table>';
-	// Create subtable in details view if specified
-	if (subtable){
-		oWhere[subtable] = subtable_array;
-		sOut += '<div id=\\"table_'+subtable+'\\">';
-		sOut += '</div>","subtable":"'+subtable+'"}';
-	} else {
-		sOut += '"}';
-	}
-	// Return details output
-	return sOut;
-}
+// function formatDetails ( table, row ){
+// 	var aData = table.fnGetData( row );
+// 	var table_id = table.attr("id");
+// 	// Start construction details output
+// 	var sOut = '{"html":"<table cellpadding=\\"5\\" cellspacing=\\"0\\" border=\\"0\\" style=\\"padding-left:50px;\\">';
+// 	var chr,start,stop,id;
+// 	var subtable;
+// 	var subtable_array = [];
+// 	$.each(SEQPLORER.tables[table_id].columns, function(index, value) {
+// 		if (aData[index]){
+// 			if (value.row_detail!==false){
+// 				if (value.queryname[0] != 'sa' || value.queryname[1] == 'info') {
+// 					if (value.row_detail){
+// 						switch(value.row_detail.type){
+// 							case 'link':
+// 								var url = value.row_detail.url;
+// 								if (value.row_detail.get){
+// 									url = url+'?'+value.row_detail.get+'='+aData[index];
+// 								}
+// 								sOut += '<tr><td>'+value.sName+'</td><td><a href='+url+'  target=\\"_blank\\">'+aData[index]+'</a></td><tr>';
+// 								break;
+// 							case 'region':
+// 								if (value.row_detail.reg_chr){
+// 									chr = aData[index];
+// 								} else if (value.row_detail.reg_start){
+// 									start = aData[index];
+// 								} else if (value.row_detail.reg_stop){
+// 									stop = aData[index];
+// 								}
+// 								break;
+// 							case 'subtable':
+// 								subtable = value.row_detail.tablename;
+// 								if (value.row_detail.columname){
+// 									subtable_array.push ({ column : value.row_detail.columname, value :aData[index]});
+// 								} else {
+// 									subtable_array.push ({ column : value.queryname, value :aData[index]});
+// 								}
+// 								break;
+// 							case 'id':
+// 								id = aData[index];
+// 								break;
+// 							default:
+// 								sOut += '<tr><td>'+value.sName+'</td><td>'+aData[index]+'</td></tr>';
+// 						}
+// 					} else {
+// 						sOut += '<tr><td>'+value.sName+'</td><td>'+aData[index]+'</td></tr>';
+// 					}
+// 				}
+// 			}
+// 		}
+// 	});
+// 	if (chr && start && stop){
+// 		sOut += '<tr><td>View region '+chr+':'+start+'-'+stop+' in:</td>';
+// 		sOut +=	'<td><a href=http://www.ensembl.org/Homo_sapiens/Location/Overview?r='+chr+':'+start+'-'+stop+' target=\\"_blank\\" title=\\"Ensembl\\" ><img class=\\"linkout\\" src=\\"img/Ensembl.jpg\\" alt=\\"Ensembl\\"/></a>';
+// 		sOut += '<a href=http://genome.ucsc.edu/cgi-bin/hgTracks?clade=mammal&org=Human&db=hg19&position=chr'+chr+':'+start+'-'+stop+' target=\\"_blank\\" title=\\"UCSC\\"><img class=\\"linkout\\" src=\\"img/UCSC.jpg\\" alt=\\"UCSC\\"/></a>';
+// 		sOut += '<a href=http://www.ncbi.nlm.nih.gov/projects/mapview/maps.cgi?TAXID=9606&CHR='+chr+'&MAPS=ideogr,cntg-r,ugHs,genes['+start+'%3A'+stop+'] target=\\"_blank\\" title=\\"NCBI\\"><img class=\\"linkout\\" src=\\"img/NCBI.png\\" alt=\\"NCBI\\"/></a>';
+// 		// sOut +=	'<a href=http://localhost:60151/goto?locus=chr'+chr+':'+start+'-'+stop+'&merge=true ><img class=\\"linkout\\" src=\\"img/IGV_32.png\\" alt=\\"IGV\\"/></a></td>';
+// 		sOut += '</tr>';
+// 		// sOut += '<tr><td>Goldmine literature search:</td>';
+// 		// sOut +=	'<td><a href=http://www.nxtvat.org/goldmine/search/'+id+' target=\\"_blank\\"><img class=\\"linkout\\" src=\\"http://www.nxtvat.org/goldmine/img/goldmine.png\\" alt=\\"GoldMine\\"/></a></td>';
+// 		// sOut += '</tr>';
+// 	}
+// 	sOut += '</table>';
+// 	// Create subtable in details view if specified
+// 	if (subtable){
+// 		oWhere[subtable] = subtable_array;
+// 		sOut += '<div id=\\"table_'+subtable+'\\">';
+// 		sOut += '</div>","subtable":"'+subtable+'"}';
+// 	} else {
+// 		sOut += '"}';
+// 	}
+// 	// Return details output
+// 	return sOut;
+// }
 
 
 
 // Jformer response functions
 /////////////////////////////
 
-function messageFade ( message ){
-	$("#showhide").html(message);
-	setTimeout(
-		function(){
-			$("#showhide").fadeOut("slow");
-			$("#showhide").html();
-		},
-		2000
-	);
-	reload("1000");
-}
+// function messageFade ( message ){
+// 	$("#showhide").html(message);
+// 	setTimeout(
+// 		function(){
+// 			$("#showhide").fadeOut("slow");
+// 			$("#showhide").html();
+// 		},
+// 		2000
+// 	);
+// 	reload("1000");
+// }
 
-function advancedFilter ( name, md5id, jsonsamples, jsonfilter ){
-	$('.popup[action|="advanced_filtering"]').attr("name",name);
-	$('.popup[action|="advanced_filtering"]').attr("md5id",md5id);
-    $('.popup[action|="advanced_filtering"]').html("<div><img src=\"img/af_en.png\"> "+name+"</div>");
-    $("#showhide").fadeOut("slow");
-    var samples = $.parseJSON(jsonsamples);
-    var filter = $.parseJSON(jsonfilter);
-    SEQPLORER.require=[];
-    SEQPLORER.exclude=[];
-    $.each(samples,function(key,value){
-        if(key=="$all"){
-            $.each(value,function(k,v){
-                SEQPLORER.copy_sample(v,"require");
-            });
-        } else if (key=="$nin") {
-            $.each(value,function(k,v){
-                SEQPLORER.copy_sample(v,"exclude");
-            });
-        }
-    });
-    SEQPLORER.tables["variants"].filter = filter;
-    _table_create("variants");
-}
+// function advancedFilter ( name, md5id, jsonsamples, jsonfilter ){
+// 	$('.popup[action|="advanced_filtering"]').attr("name",name);
+// 	$('.popup[action|="advanced_filtering"]').attr("md5id",md5id);
+//     $('.popup[action|="advanced_filtering"]').html("<div><img src=\"img/af_en.png\"> "+name+"</div>");
+//     $("#showhide").fadeOut("slow");
+//     var samples = $.parseJSON(jsonsamples);
+//     var filter = $.parseJSON(jsonfilter);
+//     SEQPLORER.require=[];
+//     SEQPLORER.exclude=[];
+//     $.each(samples,function(key,value){
+//         if(key=="$all"){
+//             $.each(value,function(k,v){
+//                 SEQPLORER.copy_sample(v,"require");
+//             });
+//         } else if (key=="$nin") {
+//             $.each(value,function(k,v){
+//                 SEQPLORER.copy_sample(v,"exclude");
+//             });
+//         }
+//     });
+//     SEQPLORER.tables["variants"].filter = filter;
+//     _table_create("variants");
+// }
 
-function newAdvancedFilter ( name, db_id, jsonfilter ){
-	var display_name = '';
-	if(name == ''){
-		display_name = 'UNSAVED';
-	}
-	else {
-		display_name = name;
-	}
-	$('.header_button[title|="Filter options"]').attr("name",display_name);
-	$('.popup[action|="create_filter"]').attr("db_id",db_id);
-	$('.popup[action|="save_filter"]').attr("db_id",db_id);
-	$('.popup[action|="load_filter"]').attr("db_id",db_id);
-    $('.filter_opts').replaceWith('<div class="filter_opts"><img src="img/af_en.png"> '+display_name+'</div>');
-    $("#showhide").fadeOut("slow");
-    var filter = $.parseJSON(jsonfilter);
-    SEQPLORER.tables["variants"].filter = filter;
-    _table_create("variants");
-}
+// function newAdvancedFilter ( name, db_id, jsonfilter ){
+// 	var display_name = '';
+// 	if(name == ''){
+// 		display_name = 'UNSAVED';
+// 	}
+// 	else {
+// 		display_name = name;
+// 	}
+// 	$('.header_button[title|="Filter options"]').attr("name",display_name);
+// 	$('.popup[action|="create_filter"]').attr("db_id",db_id);
+// 	$('.popup[action|="save_filter"]').attr("db_id",db_id);
+// 	$('.popup[action|="load_filter"]').attr("db_id",db_id);
+//     $('.filter_opts').replaceWith('<div class="filter_opts"><img src="img/af_en.png"> '+display_name+'</div>');
+//     $("#showhide").fadeOut("slow");
+//     var filter = $.parseJSON(jsonfilter);
+//     SEQPLORER.tables["variants"].filter = filter;
+//     _table_create("variants");
+// }
 
-function applyView (name, view_id) {
-	$('.header_button[title|="View options"]').attr("name",name);
-	$('.popup[action|="create_view"]').attr("view_id",view_id);
-	$('.popup[action|="load_view"]').attr("view_id",view_id);
-	$('.popup[action|="save_view"]').attr("view_id",view_id);
-	$('.view_opts').replaceWith('<div class="view_opts"><img src="img/transcript_view_en.png"> '+name+'</div>');
-	$("#showhide").fadeOut("slow");
-	SEQPLORER.set_table_value("variants", "view", view_id);
-	delete SEQPLORER.tables['variants'].columns;
-	_table_create("variants");
-}
+// function applyView (name, view_id) {
+// 	$('.header_button[title|="View options"]').attr("name",name);
+// 	$('.popup[action|="create_view"]').attr("view_id",view_id);
+// 	$('.popup[action|="load_view"]').attr("view_id",view_id);
+// 	$('.popup[action|="save_view"]').attr("view_id",view_id);
+// 	$('.view_opts').replaceWith('<div class="view_opts"><img src="img/transcript_view_en.png"> '+name+'</div>');
+// 	$("#showhide").fadeOut("slow");
+// 	SEQPLORER.set_table_value("variants", "view", view_id);
+// 	delete SEQPLORER.tables['variants'].columns;
+// 	_table_create("variants");
+// }
 
-function showPlot(title, link){
-	var width = $(window).width()*0.90;
-	var height = $(window).height()*0.70;
-	var content = "<a id='hidediv' href=''><img class='cancel_popup' src='img/back.png'></img></a><p class='plot_title'>"+title+"</p>";
-	content += "<iframe id='plot' src='"+link+"' width='"+width+"' height='"+height+"' frameBorder='0'></iframe>";
-	$("#showhide").html(content);
-}
+// function showPlot(title, link){
+// 	var width = $(window).width()*0.90;
+// 	var height = $(window).height()*0.70;
+// 	var content = "<a id='hidediv' href=''><img class='cancel_popup' src='img/back.png'></img></a><p class='plot_title'>"+title+"</p>";
+// 	content += "<iframe id='plot' src='"+link+"' width='"+width+"' height='"+height+"' frameBorder='0'></iframe>";
+// 	$("#showhide").html(content);
+// }
 
-// Splitter functions
-//////////////////////////////////
+// // Splitter functions
+// //////////////////////////////////
 
-function showRight(rightdiv, id, dontslideright) {
-	$.post(
-		"query/logs.php",
-		{jobid:id},
-		function(responseText){
-			var form = responseText;
-			$('#messages').html(form);
-		}
-	);
-	$('#content').simplesplitview('showRight', rightdiv, dontslideright);
-}
+// function showRight(rightdiv, id, dontslideright) {
+// 	$.post(
+// 		"query/logs.php",
+// 		{jobid:id},
+// 		function(responseText){
+// 			var form = responseText;
+// 			$('#messages').html(form);
+// 		}
+// 	);
+// 	$('#content').simplesplitview('showRight', rightdiv, dontslideright);
+// }

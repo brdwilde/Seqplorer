@@ -109,9 +109,9 @@ function multi_select_all(){
 	var samples = this.samples;
 	var projects = this.projects;
 	$('.multi_select').each(function() {
-		if ($(this).attr('samplesid') in samples){
+		if (samples && $(this).attr('samplesid') in samples){
 			$(this).prop('checked', true);
-		} else if ($(this).attr('projectsid') in projects){
+		} else if (projects && $(this).attr('projectsid') in projects){
 			$(this).prop('checked', true);
 		} else {
 			$(this).prop('checked', false);

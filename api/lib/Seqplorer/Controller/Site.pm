@@ -20,4 +20,18 @@ sub public {
 	$self->app->log->debug("Serving main page");
 	$self->render(); # renders template site/public.html.ep
 }
+
+sub table {
+	my $self = shift;
+	my $viewId = $self->stash('tableid');
+
+	my $viewModel = $self->model('view');
+	my $viewReturn = $viewModel->get({'_id' => $viewId});
+
+	$self->stash( table => $viewReturn->{view} );
+	$self->stash( columns => $viewReturn->{columns} );
+
+	$self->app->log->debug("Rendering table");
+	$self->render(); # renders template site/public.html.ep
+}
 1;
