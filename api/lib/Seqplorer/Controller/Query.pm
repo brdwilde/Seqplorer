@@ -34,6 +34,8 @@ sub submit {
 		}
 		$where = {'project' => { 'id' => { '$in' => \@idarray }}} if $collection eq "samples";
 		$where = {'sa' => { 'id' => { '$in' => \@idarray }}} if $collection eq "variants";
+	} elsif ($viewId eq 'only_variants') {
+		$where = {};
 	} else {
 		$self->app->log->debug("Where query was empty ");
 		$output->{'aaData'}=[ [ ( 'Please specify some input and try again!', map { '' } 2..$countColumns ) ] ];
@@ -42,7 +44,7 @@ sub submit {
 	}
 
 
-	$self->app->log->debug("## where query: ".Dumper($where));
+	#$self->app->log->debug("## where query: ".Dumper($where));
 	#$where = j( b( $self->param('where') )->encode('UTF-8') ) unless $where;	
 
 	## Get fields we want to display from the view	my $fields;
@@ -94,7 +96,7 @@ sub submit {
 		## Add mongo ids where needed according to the view
 		#$where = $queryModel->add_mongoid($where,$viewDoc->{'mongoid'});
 		## Add elmatch where needed accordign to the view
-		$self->app->log->debug("Element match: ".Dumper($viewDoc->{'elementmatch'}));
+		#$self->app->log->debug("Element match: ".Dumper($viewDoc->{'elementmatch'}));
 		$where = $queryModel->add_elementMatch($where,$viewDoc->{'elementmatch'});
 	}
 
@@ -146,7 +148,7 @@ sub submit {
 		#execute query with where {"project":{"id":{"$in":["5130ca73721c5a7223000004"]}}}
 		
 		# fetch the results with the options set
-		$self->app->log->debug("## query: ".Dumper($where));
+		#$self->app->log->debug("## query: ".Dumper($where));
 		my $records=$queryModel->fetch($where, $queryOptions);
 	
 		# run through the results formatting them

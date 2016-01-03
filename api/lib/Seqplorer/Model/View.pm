@@ -65,7 +65,7 @@ sub get {
 	my $return;
 	my $columns;
 
-	if ($viewId eq "variants" || $viewId eq "variants_only"){
+	if ($viewId eq "variants" || $viewId eq "only_variants"){
 		$return = $templates->{'variants'};
 		$return->{_id} = $viewId;
 		$return->{view} = $viewId;
@@ -95,6 +95,7 @@ sub get {
 				"sa.sn","sa.DP","sa.allelequal",
 				"tr.gene","tr.tr","tr.str","tr.cdnas","tr.con","tr.peps","tr.ppos","tr.pphe","tr.pphes","tr.sift","tr.sifts"
 		];
+		splice (@$columns,14,3) if ($viewId eq "only_variants");
 	} elsif ($viewId eq "projects"){
 		$return = $templates->{"projects"};
 

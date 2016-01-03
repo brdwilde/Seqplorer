@@ -94,75 +94,78 @@ sub fetch {
 		my 	@restrict = ({"find" => ["sa"],"restrict" => ["id"]});
 
 		foreach my $restrict (@restrict){
-			$restrict->{'values'}=[];
 			
-			# create the full key set for the restriction fields
-			$restrict->{'setKey'}=[@{$restrict->{'find'}}];
-			push @{$restrict->{'setKey'}}, @{$restrict->{'restrict'}};
+			my $whererestrict = undef;
+			$whererestrict = $where if (ref($where) eq 'HASH' && %{$where});
+			if ($whererestrict){
+			
+				# create the full key set for the restriction fields
+				$restrict->{'setKey'}=[@{$restrict->{'find'}}];
+				push @{$restrict->{'setKey'}}, @{$restrict->{'restrict'}};
 
-			# manipulate the where fields to obtain the restriction data
-			my $whererestrict = {%{$where}};
-
-			my @lookupKeys;
-			foreach (@{$restrict->{'setKey'}}){
-				push @lookupKeys, $_;
-				if(defined $whererestrict->{join('.',@lookupKeys)} ){
-					$whererestrict=$whererestrict->{join('.',@lookupKeys)};
+				# manipulate the where fields to obtain the restriction data
+				my @lookupKeys;
+				foreach (@{$restrict->{'setKey'}}){
+					push @lookupKeys, $_;
+					if(defined $whererestrict->{join('.',@lookupKeys)} ){
+						$whererestrict=$whererestrict->{join('.',@lookupKeys)};
+					}
 				}
+				
+				#$self->app->log->debug('fetch: after set whererestrict in loop = '.Dumper($whererestrict) );
+				#$self->app->log->debug('fetch: restrict in loop = '.Dumper($restrict) );
+				
+				# find the element we want to match the document elements to
+				# by descending into the where using the restrict array
+				$restrict->{'values'} = $self->_gethashbyarray($whererestrict,$restrict->{'restrict'});
+				
+				# remove potential mongodb operators at this level
+				# mostly $in, $all,... at this level, only $in is relevant? # TODO: check this!
+				# if (ref($whererestrict) eq "HASH"){
+				# 	foreach my $key (keys %{$whererestrict}){
+				# 		$restrict->{'values'} = [@{$whererestrict->{$key}}] if ($key =~ /^\$in/);
+				# 	}
+				# }elsif(ref($whererestrict) eq "ARRAY"){ #parent element must have been $all
+				# 	#go over the diff $elemMatch object inside the $all
+				# 	foreach my $allArrayEl (@{$whererestrict}){
+				# 		if( defined $allArrayEl->{'$elemMatch'} ){
+				# 			push @{$restrict->{'values'}}, $self->_gethashbyarray($allArrayEl->{'$elemMatch'},$restrict->{'restrict'});
+				# 		}
+				# 	}
+				# }
+				push @restrictionData, $restrict if ($restrict->{'values'});
 			}
-
-			#$self->app->log->debug('fetch: after set whererestrict in loop = '.Dumper($whererestrict) );
-			#$self->app->log->debug('fetch: restrict in loop = '.Dumper($restrict) );
-			
-			# find the element we want to match the document elements to
-			# by descending into the where using the restrict array
-			$restrict->{'values'} = $self->_gethashbyarray($whererestrict,$restrict->{'restrict'});
-			#$self->app->log->debug('fetch: restrictionData = '.Dumper($whererestrict) );
-
-			# remove potential mongodb operators at this level
-			# mostly $in, $all,... at this level, only $in is relevant? # TODO: check this!
-			# if (ref($whererestrict) eq "HASH"){
-			# 	foreach my $key (keys %{$whererestrict}){
-			# 		$restrict->{'values'} = [@{$whererestrict->{$key}}] if ($key =~ /^\$in/);
-			# 	}
-			# }elsif(ref($whererestrict) eq "ARRAY"){ #parent element must have been $all
-			# 	#go over the diff $elemMatch object inside the $all
-			# 	foreach my $allArrayEl (@{$whererestrict}){
-			# 		if( defined $allArrayEl->{'$elemMatch'} ){
-			# 			push @{$restrict->{'values'}}, $self->_gethashbyarray($allArrayEl->{'$elemMatch'},$restrict->{'restrict'});
-			# 		}
-			# 	}
-			# }
-			push @restrictionData, $restrict;
 		}
 	}
-	use Data::Dumper;
-	#$self->app->log->debug('fetch: restrictionData = '.Dumper(\@restrictionData) );
+	# use Data::Dumper;
+	# $self->app->log->debug('fetch: restrictionData = '.Dumper(\@restrictionData) );
 	
 	#my @all;
 	#eval { @all=$cursor->all; };
 	while(my $doc = $cursor->next){
 		last if(!defined $doc);
-		#$self->app->log->debug('fetch: in next loop doc:'.Dumper($doc) );
-		if(scalar(@restrictionData) > 0){
+		# $self->app->log->debug('fetch: in next loop doc:'.Dumper($doc) );
+		if(scalar(@restrictionData) > 0 ){
 			foreach my $restrict (@restrictionData){
-				my @approvedDocs;
-				foreach my $subDoc ( @{$self->_gethashbyarray($doc,$restrict->{'find'})} ){
-					#$self->app->log->debug('fetch: starting looping doc for restrict key :'.Dumper($restrict->{'find'}) );
-					my %thisDoc = %{$subDoc};
-					foreach (@{$restrict->{'restrict'}}){
-						if(defined $subDoc->{$_}){
-							# a sub document was found -> we move one level deeper
-							$subDoc=$subDoc->{$_};
-						}
-						if( grep { $subDoc eq $_ } @{$restrict->{'values'}} ){
-							# this sub document is in list of restricted values -> add to approved docs
-							push @approvedDocs, \%thisDoc;
+				#if (%$restrict->{'values'}){
+					my @approvedDocs;
+					foreach my $subDoc ( @{$self->_gethashbyarray($doc,$restrict->{'find'})} ){
+						#$self->app->log->debug('fetch: starting looping doc for restrict key :'.Dumper($restrict->{'find'}) );
+						my %thisDoc = %{$subDoc};
+						foreach (@{$restrict->{'restrict'}}){
+							if(defined $subDoc->{$_}){
+								# a sub document was found -> we move one level deeper
+								$subDoc=$subDoc->{$_};
+							}
+							if( grep { $subDoc eq $_ } @{$restrict->{'values'}} ){
+								# this sub document is in list of restricted values -> add to approved docs
+								push @approvedDocs, \%thisDoc;
+							}
 						}
 					}
-				}
-				#$self->app->log->debug('fetch: reset doc array = '.Dumper($restrict->{'setKey'}).' approved = '.Dumper(@approvedDocs) );
-				$doc = $self->_sethashbyarray($doc, $restrict->{'setKey'}, \@approvedDocs);
+					#$self->app->log->debug('fetch: reset doc array = '.Dumper($restrict->{'setKey'}).' approved = '.Dumper(@approvedDocs) );
+					$doc = $self->_sethashbyarray($doc, $restrict->{'setKey'}, \@approvedDocs);
+				#}
 			}
 		}
 		#$self->app->log->debug('fetch: restricted doc :'.Dumper($doc) );
@@ -375,6 +378,8 @@ sub _gethashbyarray{
 			} elsif (ref($hash->{$key}) eq "ARRAY"){
 				$hash = $hash->{$key}; # set the value attached to the key of the hash to be the new hash
 			}
+		} else {
+			$hash = undef;
 		}
 	}
 	#$self->app->log->debug('_gethashbyarray: return of type '.ref($hash));#.', value = '.Dumper($hash));

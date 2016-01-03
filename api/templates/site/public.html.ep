@@ -144,7 +144,7 @@
 					<div id="table_variants" showtable='variants'></div>				
 				</div>
 			</div>
-			<div id="only_variants">
+			<div id="table_only_variants">
 				<ul id="af_filters"></ul>
 			</div>	
 			<div id='showhide'></div>

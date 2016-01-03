@@ -23,6 +23,7 @@ $(document).ready( function() {
 	_table_create('projects');
 	_table_create('samples');
 	_table_create('variants');
+	_table_create("only_variants");
 
 	// Create an accordion in the center pane
 	$centerAccordion = $("#accordion").accordion({
@@ -37,33 +38,33 @@ $(document).ready( function() {
 	$("body").on("click", ".page_view", function(){
 		var page_view = $(this).attr("pview");
 		if (page_view == 'only_variants') {
-			SEQPLORER.set_table_value("variants", "view", page_view);
-			$("#table_variants").appendTo("#only_variants");
+			//SEQPLORER.set_table_value("variants", "view", page_view);
+			//$("#table_variants").appendTo("#only_variants");
 			$("#accordion").hide();
-			var height = $("#page").height();
-			$("#variants").parent('div.dataTables_scrollBody').css("height",550);
-			$("#only_variants").show();
-			$(".pv_variants").attr('samples', JSON.stringify(SEQPLORER.samples));
-			SEQPLORER.deselect_object_all('samples');
+			//var height = $("#page").height();
+			//$("#variants").parent('div.dataTables_scrollBody').css("height",550);
+			$("#table_only_variants").show();
+			//$(".pv_variants").attr('samples', JSON.stringify(SEQPLORER.samples));
+			//SEQPLORER.deselect_object_all('samples');
 			$(".pv_variants").show();
 			$(".pv_normal").hide();
 		}
 		else if (page_view == 'variants') {
-			SEQPLORER.set_table_value("variants", "view", page_view);
-			SEQPLORER.deselect_object_all('samples');
-			var samples = eval('(' + $(this).attr('samples') + ')');
-			$.each(samples, function (index, value){
-				console.log("TODO update function");
-				SEQPLORER.select_object('samples', value);
-			});
-			$("#table_variants").appendTo("#accordion > div:last-of-type");
-			$("#only_variants").hide();
+			//SEQPLORER.set_table_value("variants", "view", page_view);
+			//SEQPLORER.deselect_object_all('samples');
+			// var samples = eval('(' + $(this).attr('samples') + ')');
+			// $.each(samples, function (index, value){
+			// 	console.log("TODO update function");
+			// 	SEQPLORER.select_object('samples', value);
+			// });
+			//$("#table_variants").appendTo("#accordion > div:last-of-type");
+			$("#table_only_variants").hide();
 			$("#accordion").show();
 			$(".pv_variants").hide();
 			$(".pv_normal").show();
 		}
-		delete SEQPLORER.tables['variants'].columns;
-		_table_create("variants");
+		//delete SEQPLORER.tables['variants'].columns;
+		//_table_create("variants");
 		return false;
 	});
 
@@ -1037,12 +1038,12 @@ function _table_create(table) {
 				SEQPLORER.set_table_value(table, 'dom', response.dom);
 				SEQPLORER.set_table_value(table, 'columnfilter', response.columnfilter);
 				SEQPLORER.set_table_value(table, 'colvis', response.colvis);
+				SEQPLORER.set_table_value(table, 'collection', response.collection);
 				//SEQPLORER.set_table_value(table, 'view', response.view);
 				$.get(
 					"table/"+table,
 					function(response){
 						$('#table_'+table).html( response );
-						//$('.sparklines').sparkline('html', { enableTagOptions: true });
 						_table_build(table);
 					},
 					"html"
@@ -1076,7 +1077,7 @@ function _table_build(table) {
 			"aiExclude": SEQPLORER.tables[table].colvis
 		},
 		"sDom": SEQPLORER.tables[table].dom,
-		"sAjaxSource": "query/"+table,
+		"sAjaxSource": "query/"+SEQPLORER.tables[table].collection,
 		"aoColumns": SEQPLORER.tables[table].columns,
 		"fnDrawCallback": function ( oSettings ) {
 			// Add button to reset normal filters
@@ -1135,7 +1136,7 @@ function _table_build(table) {
 		"fnServerData": function ( sSource, aoData, fnCallback ) {
 			var where = SEQPLORER.build_query(table);
 			aoData.push(
-				{"name": "collection", "value": table },
+				{"name": "collection", "value": SEQPLORER.tables[table].collection },
 				{"name": "view", "value": SEQPLORER.tables[table].view },
 				{"name": "where", "value": JSON.stringify(where) },
 				{"name": "advanced_filter", "value": JSON.stringify(SEQPLORER.tables[table].filter) }
@@ -1152,7 +1153,7 @@ function _table_build(table) {
 		}
 	} );
 	// add per column filtering
-	if (table === 'variants'){
+	if (SEQPLORER.tables[table].collection === 'variants'){
 		SEQPLORER.tables[table].oTable.columnFilter({
 			aoColumns: SEQPLORER.tables[table].columnfilter
 		});

@@ -21,7 +21,8 @@ function SEQPLORER(args){
 	this.tables					= {
 		'samples' : { 'view' : 'samples', 'name' : 'samples', 'collection' : 'samples' },
 		'projects' : { 'view' : 'projects', 'name' : 'projects', 'collection' : 'projects' },
-		'variants' : { 'view' : 'variants', 'name' : 'variants', 'collection' : 'variants'}};
+		'variants' : { 'view' : 'variants', 'name' : 'variants', 'collection' : 'variants'},
+		'only_variants' : { 'view' : 'only_variants', 'name' : 'only_variants', 'collection' : 'variants'}};
 	this.set_table_value		= set_table_value;
 	this.custom_sort			= custom_sort;
 	this.reset_af				= reset_af;
@@ -141,7 +142,7 @@ function build_query(table){
 			};
 		}
 	}
-	if (table == 'variants' || table == 'only_variants') {
+	if (table == 'variants') {
 		if (typeof(this.samples) === 'object'){
 			// create needed empty object(s) and array(s)
 			for (var key in this.samples) {
