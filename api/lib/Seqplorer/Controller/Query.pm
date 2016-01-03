@@ -47,10 +47,25 @@ sub submit {
 
 	## Get fields we want to display from the view	my $fields;
 	my $viewModel = $self->model('view');
+	my $queryModel = $self->model('query');
 	my $viewDoc = $viewModel->get({'_id' => $viewId});
 	my $fields;
+	my $counter = 0;
 	foreach my $column (@{$viewDoc->{'columns'}}){
-		push (@$fields, $column->{'queryname'}) if ($column->{'queryname'});		
+		push (@$fields, $column->{'queryname'}) if ($column->{'queryname'});
+
+		#$where = $queryModel->_sethashbyarray($where,$column->{'queryname'},$self->param('sSearch_'.$counter)) if $self->param('sSearch_'.$counter);
+
+		if ($self->param('sSearch_'.$counter)){
+			my $value;
+			if ($column->{type} eq 'numerical'){
+				$value += $self->param('sSearch_'.$counter);
+			} else {
+				$value = $self->param('sSearch_'.$counter);
+			}
+			$where = $self->_sethashbyarray($where,$column->{'queryname'},$value);
+		}
+		$counter++;
 	}
 
 	my $queryOptions = {
@@ -64,7 +79,6 @@ sub submit {
 	use Data::Dumper;
 	
 	## Check 'advanced where' filter
-	my $queryModel = $self->model('query');
 	my $advWhere;
 	if(defined $self->param('advanced_filter') && length $self->param('advanced_filter') > 2 ){
 		#$advWhere = j( b( $self->param('advanced_filter') )->encode('UTF-8') );
@@ -132,7 +146,7 @@ sub submit {
 		#execute query with where {"project":{"id":{"$in":["5130ca73721c5a7223000004"]}}}
 		
 		# fetch the results with the options set
-		$self->app->log->debug("## queryOptions: ".Dumper($where,$queryOptions));
+		$self->app->log->debug("## query: ".Dumper($where));
 		my $records=$queryModel->fetch($where, $queryOptions);
 	
 		# run through the results formatting them
@@ -251,6 +265,51 @@ sub _getvals{ #$record, $column
 		}
 	}
 	return $return;
+}
+
+sub _sethashbyarray{
+	my $self = shift;
+	my $hash = shift;
+	my $arrayArg = shift;
+	my @array = @{$arrayArg};
+	my $set = shift;
+
+	#$self->app->log->debug('hash is:'.Dumper($hash));
+
+	my $key = shift(@array);
+	if ($key) {
+		# array had an element, we continue
+		if (ref($hash) eq 'HASH'){
+			# hash truely is a hash
+			if ($hash->{$key}){
+				# the hash key already exists
+				$hash->{$key} = $self->_sethashbyarray($hash->{$key},\@array,$set);
+				return $hash;
+			} else {
+				# key might exist under a mongo operator
+				LOOP: foreach my $operator (keys %{$hash}){
+					if ($operator =~ /^\$/){
+						if ($hash->{$operator}->{$key}){
+							# found operator and key under it, continue	
+							$hash->{$operator}->{$key} = $self->_sethashbyarray($hash->{$operator}->{$key},\@array,$set);
+							return $hash;
+						} else {
+							# we found an operator, but no key under it, we create it
+							$hash->{$operator}->{$key} = $self->_sethashbyarray(undef,\@array,$set);
+							return $hash;
+						}
+						last LOOP;
+					}
+				}
+			}
+		}
+		# create a hashref with the key set
+		$hash->{$key} = $self->_sethashbyarray(undef,\@array,$set);
+		return $hash;
+	} else {
+		#last element of array reached, we return the value
+		return $set;
+	}
 }
 
 

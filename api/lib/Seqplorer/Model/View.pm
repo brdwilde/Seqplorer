@@ -111,10 +111,10 @@ sub get {
 					'type' => "checkbox",
 					'classes' => ["multi_select"],
 					'stashvars' => {"projectsid" => "_id", "projectsname"=>"name"}}),
-			    { "sName" => "ID", "queryname" => [ "_id" ], "showable" => 0, "bVisible" => \0 },
+			    { "sName" => "ID", "queryname" => [ "_id" ], "unshowable" => 1, "bVisible" => \0 },
 			    { "sName" => "Name", "queryname" => [ "name" ], "sorting" => \1 },
 			    { "sName" => "Groups", "queryname" => [ "groups", "name" ], "template" => { "name" => "concat", "option" => "_" } },
-			    { "sName" => "Group ID", "queryname" => [ "groups", "id" ], "showable" => 0, "bVisible" => \0, },
+			    { "sName" => "Group ID", "queryname" => [ "groups", "id" ], "unshowable" => 1, "bVisible" => \0, },
 			    { "sName" => "Description", "queryname" => [ "description" ] }
 			];
 
@@ -134,16 +134,16 @@ sub get {
 					'type' => "checkbox",
 					'classes' => ["multi_select"],
 					'stashvars' => {"samplesid" => "_id", "samplesname"=>"name"}}),
-			    { "sName" => "ID", "queryname" => [ "_id" ], "showable" => 0, "bVisible" => \0 },
+			    { "sName" => "ID", "queryname" => [ "_id" ], "unshowable" => 1, "bVisible" => \0 },
 			    { "sName" => "Name", "queryname" => [ "name" ], "sorting" => \1 },
 			    { "sName" => "Description", "queryname" => [ "description" ] },
 			    { "sName" => "Genomebuild", "queryname" => [ "genome" ] },
 			    { "sName" => "Project", "queryname" => [ "project", "name" ], "template" => { "name" => "concat", "option" => "\/" }, "bSortable" => \0 },
-			    { "sName" => "Project ID", "queryname" => [ "project", "id" ], "showable" => 0, "bVisible" => \0 },
+			    { "sName" => "Project ID", "queryname" => [ "project", "id" ], "unshowable" => 1, "bVisible" => \0 },
 			    { "sName" => "File name", "queryname" => [ "files", "name" ], "bSortable" => \0  },
 			    { "sName" => "File type", "queryname" => [ "files", "filetype" ], "bSortable" => \0  },
 			    { "sName" => "File location", "queryname" => [ "files", "type" ], "bSortable" => \0  },
-			    { "sName" => "Filename", "queryname" => [ "files", "file" ], "showable" => 0, "bVisible" => \0 },
+			    { "sName" => "Filename", "queryname" => [ "files", "file" ], "unshowable" => 1, "bVisible" => \0 },
 			    { "sName" => "Compression", "queryname" => [ "files", "compression" ], "bSortable" => \0  },
 			    { "sName" => "File host", "queryname" => [ "files", "host" ], "bSortable" => \0  },
 			    { "sName" => "Username", "queryname" => [ "files", "user" ], "bSortable" => \0 },
@@ -199,26 +199,27 @@ sub get {
 	}
 
 	foreach my $col (keys %stashcolumns){
-		push (@$columns,{"queryname" => [$col], "showable" => 0, "bVisible" => \0 }) unless ($allcolumns{$col});
+		push (@$columns,{"queryname" => [$col], "unshowable" => 1, "bVisible" => \0 }) unless ($allcolumns{$col});
 	}
 	# now add all the mongoid columns to the view
 	if ($return->{'mongoid'}){
 		foreach my $col (@{$return->{'mongoid'}}){
 			my $colstring = join(".",@$col);
-			push (@$columns,{"queryname" => $col, "showable" => 0, "bVisible" => \0 }) unless ($allcolumns{$colstring} || $stashcolumns{$colstring});
+			push (@$columns,{"queryname" => $col, "unshowable" => 1, "bVisible" => \0 }) unless ($allcolumns{$colstring} || $stashcolumns{$colstring});
 		}
 	}
 
 	# now remove the stashcolumns if the are already part of the columns
 	my $index = 0;
 	for my $column (@$columns) {
-		my $filter = \0;
+		my $filter = undef;
 		if (ref$column eq 'HASH') {
 			# this column element is fully encoded in the view record
 			push @{$return->{'columns'}}, $column;
-			# add the colum index with the showable argument to the colvis section of the header
-			push @{$return->{'colvis'}}, $index if ($column->{showable} && !$column->{showable});
-			delete $column->{showable};
+			# add the colum index with the unshowable argument to the colvis section of the header
+			#push @{$return->{'colvis'}}, $index if ($column->{unshowable} && !$column->{unshowable});
+			push @{$return->{'colvis'}}, $index if (defined($column->{unshowable}) && $column->{unshowable});
+			delete $column->{unshowable};
 		} else {
 			# in case of column dot notation: create a default column
 			my @arraynotation = split(/\./,$column);
@@ -261,9 +262,10 @@ sub get {
 
 					if ($uniqueDoc->{'type'} eq 'text'){
 						if (ref($uniqueDoc->{'values'}[0]) ne 'ARRAY'){
+							my @values = sort { lc($a) cmp lc($b) } @{$uniqueDoc->{'values'}};
 							$filter = { 
 								type => "select",
-								values => $uniqueDoc->{'values'}
+								values => \@values
 							};							
 						} else {
 							$filter = {	type => "text"};
@@ -271,7 +273,7 @@ sub get {
 					} elsif ($uniqueDoc->{'type'} eq 'numerical'){
 						$filter = { type => "number"};
 					}
-					$element->{'showable'} = \0 if $uniqueDoc->{'type'} eq 'mongo_id';
+					push @{$return->{'colvis'}}, $index if ($uniqueDoc->{'type'} eq 'mongo_id');
 					$element->{'bVisible'} = \0 if $uniqueDoc->{'type'} eq 'mongo_id';
 					#$column->{'searchtype'}=$uniqueDoc->{'type'};
 					#if(defined $uniqueDoc->{'values'} && scalar(@{$uniqueDoc->{'values'}}) > 1 ){
@@ -394,7 +396,7 @@ sub _html_column {
 		"bSortable" => \0,
 		"bSearchable" => \0,
 		"row_detail" => \0,
-      	"showable" => 0,
+      	"unshowable" => 0,
       	"template" => $html,
       	"stash" => $stashvars
 	};
