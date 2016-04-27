@@ -14,7 +14,7 @@
 		<tr>
 			<% foreach my $colum (@$columns) { %>
 			<th <%= 	"title='".$colum->{footertip}."'" if ($colum->{footertip}); %>>
-			<%="Filter" if ($colum->{sName} eq "Detail"); %></th>
+			<%="Filter" if ($colum->{sName} && $colum->{sName} eq "Detail"); %></th>
 			<%	} %>
 		</tr>
 		<tr>
@@ -31,7 +31,7 @@
 			<%	} %>
 			<% if ($colum->{graphid}) { %>
 				<img class="table_icon" graphid="<%= $colum->{graphid} %>" src="img/stats.png">
-			<% } elsif ($colum->{sName} eq "Detail") { %>
+			<% } elsif ($colum->{sName} && $colum->{sName} eq "Detail") { %>
 				Value range:
 			<%	} %>
 				</td>
