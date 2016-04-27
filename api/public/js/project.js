@@ -5,12 +5,11 @@ $(document).ready( function() {
 	// MAIN WINDOW LAYOUT AND BUILDUP
 	/////////////////////////////////////////////////////////////
 	$(window).resize(function(){
-		$(window).resize(function(){
-			var width = $(window).width();
-			// header resize to be checked
-			$("#header").width(width);
-			$("#page").width(width);
-		});
+		$("#accordion").accordion("refresh");
+		SEQPLORER.tables['projects'].oTable.fnDraw();
+		SEQPLORER.tables['samples'].oTable.fnDraw();
+		SEQPLORER.tables['variants'].oTable.fnDraw();
+		SEQPLORER.tables['only_variants'].oTable.fnDraw();
 	});
 
 	$(function() {
@@ -32,41 +31,29 @@ $(document).ready( function() {
 	});
 
 
-	//////////////////////////
-	// DATATABLES FUNCTIONS //
-	//////////////////////////
+	// switch form accordion to all variants views
 	$("body").on("click", ".page_view", function(){
 		var page_view = $(this).attr("pview");
 		if (page_view == 'only_variants') {
-			//SEQPLORER.set_table_value("variants", "view", page_view);
-			//$("#table_variants").appendTo("#only_variants");
 			$("#accordion").hide();
-			//var height = $("#page").height();
-			//$("#variants").parent('div.dataTables_scrollBody').css("height",550);
 			$("#table_only_variants").show();
-			//$(".pv_variants").attr('samples', JSON.stringify(SEQPLORER.samples));
-			//SEQPLORER.deselect_object_all('samples');
+			SEQPLORER.tables['only_variants'].oTable.fnDraw();
 			$(".pv_variants").show();
 			$(".pv_normal").hide();
 		}
 		else if (page_view == 'variants') {
-			//SEQPLORER.set_table_value("variants", "view", page_view);
-			//SEQPLORER.deselect_object_all('samples');
-			// var samples = eval('(' + $(this).attr('samples') + ')');
-			// $.each(samples, function (index, value){
-			// 	console.log("TODO update function");
-			// 	SEQPLORER.select_object('samples', value);
-			// });
-			//$("#table_variants").appendTo("#accordion > div:last-of-type");
 			$("#table_only_variants").hide();
 			$("#accordion").show();
+			$("#accordion").accordion("refresh");
 			$(".pv_variants").hide();
 			$(".pv_normal").show();
 		}
-		//delete SEQPLORER.tables['variants'].columns;
-		//_table_create("variants");
 		return false;
 	});
+
+	//////////////////////////
+	// DATATABLES FUNCTIONS //
+	//////////////////////////
 
 	// Row detail
 	$("body").on("click", ".row_detail", function(){
@@ -1021,14 +1008,12 @@ $(document).ready( function() {
 function _table_create(table) {
 	// set some variables
 	var view = SEQPLORER.tables[table].view; // the view on the database table the user requested
-	console.log(view);
-
+	
 	// replace table with loader image when table is loading
 	$('#table_'+table).html( "<img src='img/loader.gif' alt='loading...' />" );
 
 	// Get the headers for this table
 	if (!SEQPLORER.tables[table].hasOwnProperty('columns')){
-		console.log("recreate table "+table);
 		$.get(
 			"view/"+SEQPLORER.tables[table].view,
 			//{view:SEQPLORER.tables[table].view,collection:table,columns:"1"},
@@ -1052,12 +1037,22 @@ function _table_create(table) {
 			"json"
 		);
 	} else {
-		console.log("refill table "+table);
 		_table_build(table);
 	}
 }
 
 function _table_build(table) {
+	// var headersize=$("#"+table+"_wrapper").height()-$("#"+table+"_wrapper").find(".dataTables_scrollBody").height();
+	// console.log("TAble wrapper size: "+$("#"+table+"_wrapper").height());
+	// console.log("Active accordion size: "+$(".ui-accordion-content-active").height());
+	// console.log("Scrollbody size: "+$("#"+table+"_wrapper").find(".dataTables_scrollBody").height());
+
+	var maxtablesize = $(".ui-accordion-content-active").height();
+	console.log(maxtablesize);
+	if (table=="only_variants"){
+		maxtablesize = $("#page").height();
+	}
+	console.log(maxtablesize);
 
 	// Create the table object and fill it with data
 	SEQPLORER.tables[table].oTable = $('#'+table).dataTable( {
@@ -1068,8 +1063,9 @@ function _table_build(table) {
 		// "aaSorting":[[sorting, "desc"]],
 		"bScrollInfinite": true,
 		"bScrollCollapse": true,
+		//"sScrollY": $("#accordion").height()-SEQPLORER.interface_vars.height_correction,
+		"sScrollY" : maxtablesize-130,
 		"bAutoWidth": true,
-		// "sScrollY": $("#accordion").height()-SEQPLORER.interface_vars.height_correction,
 		"sScrollX": "auto",
 		"oColVis": {
 			"buttonText": "Columns",
@@ -1087,50 +1083,23 @@ function _table_build(table) {
 				$(".dataTables_scrollHeadInner .opts_th_"+table).html(html);
 			}
 			// Set background for custom sort to default
-			$(".custom_sort").css("background","url('css/jquery-ui-seqplorer/images/sort_both.png') no-repeat center right");
-			
-			// Execute table-specific redraw functions
-			// if (table == 'projects'){
-			// 	var where = SEQPLORER.build_query(table); // TODO: this will always evaluate to true with the SEQPLORER object... other solution?
-			// 	if (where){
-			// 		$("#table_projects").show();
-			// 		$("#welcome").hide();
-			// 	} else {
-			// 		$("#table_projects").hide();
-			// 		$("#welcome").show();
-			// 	}
-			// }
+			//$(".custom_sort").css("background","url('css/jquery-ui-seqplorer/images/sort_both.png') no-repeat center right");
 
 			// add the sparkline elements
 			$('.sparklines').sparkline('html', { enableTagOptions: true });
 
-			oSettings.oScroll.sY = $("#accordion").height()-SEQPLORER.interface_vars.height_correction.variants;
-			// Height correction to correctly show one result
-			if ($("#"+table).height()<$("#accordion").height()-SEQPLORER.interface_vars.height_correction){
-				if ($("#"+table).height() < 75){
-					$("#"+table).parent('div.dataTables_scrollBody').css("height",75);
-				}
-				else {
-					$("#"+table).parent('div.dataTables_scrollBody').css("height",$("#"+table).height());
-				}
-			} else {
-				if (SEQPLORER.tables[table].view == 'variants'){
-					$("#"+table).parent('div.dataTables_scrollBody').css("height",$("#accordion").height()-SEQPLORER.interface_vars.height_correction.variants);
-				}
-				else if(SEQPLORER.tables[table].view == 'only_variants'){
-					$("#"+table).parent('div.dataTables_scrollBody').css("height",$("#accordion").height()-SEQPLORER.interface_vars.height_correction.only_variants);
-				}
-				else {
-					$("#"+table).parent('div.dataTables_scrollBody').css("height",$("#accordion").height()-SEQPLORER.interface_vars.height_correction.other);
-				}
+			// resize height taking into acount all table elements
+			if (oSettings.oScroll.sY>=maxtablesize){
+				oSettings.oScroll.sY = oSettings.oScroll.sY-$("#"+table+"_wrapper").find(".dataTables_scrollHead").height()-$("#"+table+"_wrapper").find(".dataTables_scrollFoot").height()-$("#"+table+"_wrapper").find(".ColVis").height()-$("#"+table+"_wrapper").find(".dataTables_filter").height();
 			}
 
 			// Set width of table if it is less than accordion width
-			if ($("#"+table).parents('div.dataTables_scroll').children('div.dataTables_scrollHead').children('div.dataTables_scrollHeadInner').width()-15<=$("#accordion").width()){
-				$("#"+table).parent("div.dataTables_scrollBody").children('table').css("width","100%");
-				$("#"+table).parent("div.dataTables_scrollHeader").children('table').css("width","100%");
-				$("#"+table).parent("div.dataTables_scrollFooter").children('table').css("width","100%");
-			}
+			// TODO: current code makes tables look more clean, but generates header problems if tables are resized or redrawn -> fix required
+			// if ($("#"+table).parents('div.dataTables_scroll').children('div.dataTables_scrollHead').children('div.dataTables_scrollHeadInner').width()-15<=$("#accordion").width()){
+			// 	$("#"+table).parent("div.dataTables_scrollBody").children('table').css("width","100%");
+			// 	$("#"+table).parent("div.dataTables_scrollHeader").children('table').css("width","100%");
+			// 	$("#"+table).parent("div.dataTables_scrollFooter").children('table').css("width","100%");
+			// }
 		},
 		// Send additional data to backend
 		"fnServerData": function ( sSource, aoData, fnCallback ) {
