@@ -22,8 +22,7 @@ sub startup {
  	$configfile = '../seqplorer.json' if ( -e '../seqplorer.json' );
  	$configfile = '../../seqplorer.json' if ( -e '../../seqplorer.json' );
  	$configfile = '/etc/seqplorer/seqplorer.json' if ( -e '/etc/seqplorer/seqplorer.json' );
-	#my $config = plugin JSONConfig => {file => $configfile};
-
+	
 	my $config = $self->plugin('JSONConfig',{
 		file => $configfile
 	});

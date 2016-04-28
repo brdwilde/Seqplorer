@@ -24,8 +24,8 @@ sub submit {
 	if ($collection eq "projects"){
 		# for the projects the "where" is not submitted, we get it for the user
 		my $groupModel = $self->model('group');
-		my $groupReturn = $groupModel->getmongoids();
-	
+		my $groupReturn = $groupModel->getmongoids($self->session('userid'));
+		
 		$where = {'groups' => { 'id' => { '$in' => $groupReturn->{groupids} }}};
 	} elsif (@$where) {
 		my @idarray;
@@ -42,10 +42,6 @@ sub submit {
 		$self->render( json => $output );
 		return;
 	}
-
-
-	#$self->app->log->debug("## where query: ".Dumper($where));
-	#$where = j( b( $self->param('where') )->encode('UTF-8') ) unless $where;	
 
 	## Get fields we want to display from the view	my $fields;
 	my $viewModel = $self->model('view');
@@ -78,8 +74,6 @@ sub submit {
 		'fields' => $fields
 	};
 
-	use Data::Dumper;
-	
 	## Check 'advanced where' filter
 	my $advWhere;
 	if(defined $self->param('advanced_filter') && length $self->param('advanced_filter') > 2 ){
@@ -145,10 +139,12 @@ sub submit {
 			$queryOptions->{'limit'}=$self->param('iDisplayLength');
 		}
 		$queryOptions->{'sort'} = \%sortQuery if (%sortQuery);
-		#execute query with where {"project":{"id":{"$in":["5130ca73721c5a7223000004"]}}}
 		
+		#use Data::Dumper;
+		#$self->app->log->debug("## where query: ".Dumper($where));
+		#$self->app->log->debug("## options: ".Dumper($queryOptions));
+
 		# fetch the results with the options set
-		#$self->app->log->debug("## query: ".Dumper($where));
 		my $records=$queryModel->fetch($where, $queryOptions);
 	
 		# run through the results formatting them

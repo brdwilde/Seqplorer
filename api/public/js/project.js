@@ -1048,11 +1048,9 @@ function _table_build(table) {
 	// console.log("Scrollbody size: "+$("#"+table+"_wrapper").find(".dataTables_scrollBody").height());
 
 	var maxtablesize = $(".ui-accordion-content-active").height();
-	console.log(maxtablesize);
 	if (table=="only_variants"){
 		maxtablesize = $("#page").height();
 	}
-	console.log(maxtablesize);
 
 	// Create the table object and fill it with data
 	SEQPLORER.tables[table].oTable = $('#'+table).dataTable( {

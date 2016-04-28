@@ -115,7 +115,7 @@ sub authenticate {
 	my $self = shift;
 	my $email = uc($self->param('email'));
 	my $password = md5_sum($self->param('password'));
-
+	
 	my $return = { Success => 0, Message => "Unable to login, please check your credentials"};
 
 	$self->app->log->debug("Authenticating user ".$email." with password ".$password);	
@@ -124,7 +124,7 @@ sub authenticate {
 	if ($email && $password){
 		my $userModel = $self->model('user');
 		my $userReturn = $userModel->getid($email,$password);
-	
+
 		if ($userReturn->{Success}){
 			$userid = $userReturn->{userdata}->{_id}."";
 			$self->session(userid => $userid);
