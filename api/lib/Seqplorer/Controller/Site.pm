@@ -25,6 +25,11 @@ sub table {
 	my $self = shift;
 	my $viewId = $self->stash('tableid');
 
+	# get configuration info
+	my $config = $self->app->config;
+
+	$self->stash(shiny_url => $config->{site}->{shiny});
+
 	my $viewModel = $self->model('view');
 	my $viewReturn = $viewModel->get({'_id' => $viewId});
 

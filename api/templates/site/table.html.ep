@@ -30,7 +30,7 @@
 				<td>
 			<%	} %>
 			<% if ($colum->{graphid}) { %>
-				<img class="table_icon" graphid="<%= $colum->{graphid} %>" src="img/stats.png">
+				<a href="<%= $shiny_url %>/defaultgraphs/#dataset=<%= $colum->{graphid} %>"><img class="table_icon" src="img/stats.png"></a>
 			<% } elsif ($colum->{sName} && $colum->{sName} eq "Detail") { %>
 				Value range:
 			<%	} %>
