@@ -1,7 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(rmongodb)
-library(XML)
+library(jsonlite)
 
 # get the database credentials and connect
 host <- "localhost"
@@ -10,30 +10,28 @@ coll <- "plots"
 
 # update the config settings from the config file if it exists
 configfile <- NULL
-if (file.exists('config.xml')){
-  configfile <- 'config.xml'
-} else if (file.exists('../config.xml')){
-  configfile <- '../config.xml'
-} else if (file.exists('../../config.xml')){
-  configfile <- '../../config.xml'
-} else if (file.exists('/etc/seqplorer/config.xml')){
-  configfile <- '/etc/seqplorer/config.xml'
+if (file.exists('seqplorer.json')){
+  configfile <- 'seqplorer.json'
+} else if (file.exists('../seqplorer.json')){
+  configfile <- '../seqplorer.json'
+} else if (file.exists('../../seqplorer.json')){
+  configfile <- '../../seqplorer.json'
+} else if (file.exists('/etc/seqplorer/seqplorer.json')){
+  configfile <- '/etc/seqplorer/seqplorer.json'
 }
 if(!is.null(configfile)){
-  xmlfile <- xmlTreeParse(configfile) 
-  
-  # Use the xmlRoot-function to access the top node  
-  xmltop = xmlRoot(xmlfile)
+  # read the config file
+  config<-fromJSON(paste(readLines(configfile), collapse=" ")) 
 
   # get the config details if they are specified
-  if (!is.null(xmltop[['database']][['dbname']][1]$text)){
-    db <- xmlValue(xmltop[['database']][['dbname']][1]$text)
+  if (!is.null(config$database$dbname)){
+    db <- config$database$dbname
   }
-  if (!is.null(xmltop[['database']][['host']][1]$text)){
-    host <- xmlValue(xmltop[['database']][['host']][1]$text)
+  if (!is.null(config$database$host)){
+    host <- config$database$host
   }
-  if (!is.null(xmltop[['database']][['collections']][['plots']][1]$text)){
-    coll <- xmlValue(xmltop[['database']][['collections']][['plots']][1]$text)
+  if (!is.null(config$database$coll)){
+    coll <- config$database$coll
   }
 }
 
