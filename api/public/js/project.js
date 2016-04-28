@@ -1047,9 +1047,11 @@ function _table_build(table) {
 	// console.log("Active accordion size: "+$(".ui-accordion-content-active").height());
 	// console.log("Scrollbody size: "+$("#"+table+"_wrapper").find(".dataTables_scrollBody").height());
 
-	var maxtablesize = $(".ui-accordion-content-active").height();
+	var tablesize = $(".ui-accordion-content-active").height()-72;// - 120;
 	if (table=="only_variants"){
-		maxtablesize = $("#page").height();
+		tablesize = $("#page").height()-182;
+	} else if (table=="variants"){
+		tablesize = $("#page").height()-159;
 	}
 
 	// Create the table object and fill it with data
@@ -1061,8 +1063,7 @@ function _table_build(table) {
 		// "aaSorting":[[sorting, "desc"]],
 		"bScrollInfinite": true,
 		"bScrollCollapse": true,
-		//"sScrollY": $("#accordion").height()-SEQPLORER.interface_vars.height_correction,
-		"sScrollY" : maxtablesize-130,
+		"sScrollY" : tablesize,
 		"bAutoWidth": true,
 		"sScrollX": "auto",
 		"oColVis": {
@@ -1087,9 +1088,14 @@ function _table_build(table) {
 			$('.sparklines').sparkline('html', { enableTagOptions: true });
 
 			// resize height taking into acount all table elements
-			if (oSettings.oScroll.sY>=maxtablesize){
-				oSettings.oScroll.sY = oSettings.oScroll.sY-$("#"+table+"_wrapper").find(".dataTables_scrollHead").height()-$("#"+table+"_wrapper").find(".dataTables_scrollFoot").height()-$("#"+table+"_wrapper").find(".ColVis").height()-$("#"+table+"_wrapper").find(".dataTables_filter").height();
+			var maxtablesize = $(".ui-accordion-content-active").height();
+			if (table=="only_variants"){
+				maxtablesize = $("#page").height();
 			}
+			var resize = $("#"+table+"_wrapper").find(".dataTables_scrollHead").height()+$("#"+table+"_wrapper").find(".dataTables_scrollFoot").height()+$("#"+table+"_wrapper").find(".ColVis").height()+$("#"+table+"_wrapper").find(".dataTables_filter").height();
+
+			// resize the table
+			$("#"+table+"_wrapper").find(".dataTables_scrollBody").css({'height':maxtablesize-resize});
 
 			// Set width of table if it is less than accordion width
 			// TODO: current code makes tables look more clean, but generates header problems if tables are resized or redrawn -> fix required
@@ -1125,6 +1131,13 @@ function _table_build(table) {
 			aoColumns: SEQPLORER.tables[table].columnfilter
 		});
 	}
+
+	// resize the table after it is drawn
+	//SEQPLORER.tables[table].oTable.fnDraw();
+	// var maxtablesize = $(".ui-accordion-content-active").height();// - 120;
+	// if (table=="only_variants"){
+	// 	maxtablesize = $("#page").height();// - 180;
+	// }
 }
 
 // Formating function for row details
